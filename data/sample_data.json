@@ -1,0 +1,474 @@
+// Sankey
+
+{
+    "sources": ["Facebook Pages", "Facebook Group", "Facebook Users", "Forum", "News", "YouTube"],
+    "sentiments": ["Positive", "Neutral", "Negative"],
+    "topics": ["TÍN DỤNG CÁ NHÂN", "SẢN PHẨM", "DỊCH VỤ CHUYỂN TIỀN", "THƯƠNG HIỆU CHUNG", "BAN LÃNH ĐẠO", "CHỨNG KHOÁN", "TRÁI PHIẾU", "E-BANKING"],
+    "links": [
+      {"source": "Facebook Pages", "sentiment": "Positive", "value": 27},
+      {"source": "Facebook Pages", "sentiment": "Neutral", "value": 267},
+      {"source": "Facebook Pages", "sentiment": "Negative", "value": 32},
+      {"source": "Facebook Group", "sentiment": "Positive", "value": 35},
+      {"source": "Facebook Group", "sentiment": "Neutral", "value": 650},
+      {"source": "Facebook Group", "sentiment": "Negative", "value": 15},
+      {"source": "Facebook Users", "sentiment": "Positive", "value": 10},
+      {"source": "Facebook Users", "sentiment": "Neutral", "value": 180},
+      {"source": "Facebook Users", "sentiment": "Negative", "value": 5},
+      {"source": "Forum", "sentiment": "Positive", "value": 0},
+      {"source": "Forum", "sentiment": "Neutral", "value": 13},
+      {"source": "Forum", "sentiment": "Negative", "value": 0},
+      {"source": "YouTube", "sentiment": "Positive", "value": 2},
+      {"source": "YouTube", "sentiment": "Neutral", "value": 41},
+      {"source": "YouTube", "sentiment": "Negative", "value": 2},
+      {"source": "News", "sentiment": "Positive", "value": 20},
+      {"source": "News", "sentiment": "Neutral", "value": 340},
+      {"source": "News", "sentiment": "Negative", "value": 30},
+      {"sentiment": "Positive", "topic": "TÍN DỤNG CÁ NHÂN", "value": 21},
+      {"sentiment": "Positive", "topic": "SẢN PHẨM", "value": 27},
+      {"sentiment": "Positive", "topic": "DỊCH VỤ CHUYỂN TIỀN", "value": 1},
+      {"sentiment": "Positive", "topic": "THƯƠNG HIỆU CHUNG", "value": 1},
+      {"sentiment": "Positive", "topic": "BAN LÃNH ĐẠO", "value": 1},
+      {"sentiment": "Positive", "topic": "CHỨNG KHOÁN", "value": 18},
+      {"sentiment": "Positive", "topic": "TRÁI PHIẾU", "value": 1},
+      {"sentiment": "Positive", "topic": "E-BANKING", "value": 12},
+      {"sentiment": "Neutral", "topic": "TÍN DỤNG CÁ NHÂN", "value": 199},
+      {"sentiment": "Neutral", "topic": "SẢN PHẨM", "value": 151},
+      {"sentiment": "Neutral", "topic": "DỊCH VỤ CHUYỂN TIỀN", "value": 3},
+      {"sentiment": "Neutral", "topic": "THƯƠNG HIỆU CHUNG", "value": 8},
+      {"sentiment": "Neutral", "topic": "BAN LÃNH ĐẠO", "value": 1},
+      {"sentiment": "Neutral", "topic": "CHỨNG KHOÁN", "value": 752},
+      {"sentiment": "Neutral", "topic": "TRÁI PHIẾU", "value": 148},
+      {"sentiment": "Neutral", "topic": "E-BANKING", "value": 50},
+      {"sentiment": "Negative", "topic": "TÍN DỤNG CÁ NHÂN", "value": 1},
+      {"sentiment": "Negative", "topic": "SẢN PHẨM", "value": 38},
+      {"sentiment": "Negative", "topic": "DỊCH VỤ CHUYỂN TIỀN", "value": 2},
+      {"sentiment": "Negative", "topic": "THƯƠNG HIỆU CHUNG", "value": 8},
+      {"sentiment": "Negative", "topic": "BAN LÃNH ĐẠO", "value": 11},
+      {"sentiment": "Negative", "topic": "CHỨNG KHOÁN", "value": 21},
+      {"sentiment": "Negative", "topic": "TRÁI PHIẾU", "value": 3},
+      {"sentiment": "Negative", "topic": "E-BANKING", "value": 0}
+  
+    ]
+  }
+
+
+// Top Social
+{
+    "title": "Top Social Posts",
+    "x":  ["Ngân hàng SHB", "Chứng khoán SHS", "Hà Nội Của Tội", "Sài Gòn News"],
+    "y": [[40, 15, 10, 5], [100, 0, 0, 0]],
+    "colors": ["#FFA500", "#00CED1"]
+}
+
+// Line Trend 
+{
+    "title": "So sánh theo ngày giữa tuần này và tuần trước",
+    "xlabel": "Ngày",
+    "ylabel": "Số lượng",
+    "x": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    "y": [[20, 30, 25, 35, 40, 38, 50],[15, 28, 22, 30, 36, 33, 42]],
+		"labels": ["This Week", "Last Week"],
+    "colors": ["blue", "green"]
+}
+
+//Word Cloud 
+{
+	"title": "Positve WordCloud",
+	"data": [
+		{
+            "key": "ngân hàng",
+            "doc_count": 27
+        },
+        {
+            "key": "ninh thuận",
+            "doc_count": 23
+        },
+        {
+            "key": "xe máy",
+            "doc_count": 23
+        },
+        {
+            "key": "nhân viên",
+            "doc_count": 22
+        },
+        {
+            "key": "đức trọng",
+            "doc_count": 22
+        },
+        {
+            "key": "công an",
+            "doc_count": 20
+        },
+        {
+            "key": "lâm đồng",
+            "doc_count": 19
+        },
+        {
+            "key": "báo động",
+            "doc_count": 18
+        },
+        {
+            "key": "bảo vệ",
+            "doc_count": 18
+        },
+        {
+            "key": "lực lượng",
+            "doc_count": 18
+        },
+        {
+            "key": "tâu xá_phiến",
+            "doc_count": 18
+        },
+        {
+            "key": "đa quyn",
+            "doc_count": 17
+        },
+        {
+            "key": "bắt giữ",
+            "doc_count": 16
+        },
+        {
+            "key": "phú hội",
+            "doc_count": 16
+        },
+        {
+            "key": "quy định",
+            "doc_count": 16
+        },
+        {
+            "key": "địa bàn",
+            "doc_count": 16
+        },
+        {
+            "key": "ứng dụng",
+            "doc_count": 16
+        },
+        {
+            "key": "ba lô",
+            "doc_count": 15
+        },
+        {
+            "key": "giao dịch",
+            "doc_count": 15
+        },
+        {
+            "key": "đối tượng",
+            "doc_count": 15
+        },
+        {
+            "key": "hoảng sợ",
+            "doc_count": 14
+        },
+        {
+            "key": "hộp quẹt",
+            "doc_count": 14
+        },
+        {
+            "key": "khẩu trang",
+            "doc_count": 14
+        },
+        {
+            "key": "sử dụng",
+            "doc_count": 14
+        },
+        {
+            "key": "thuận nam",
+            "doc_count": 14
+        },
+        {
+            "key": "tiếp tục",
+            "doc_count": 14
+        },
+        {
+            "key": "tâu xá",
+            "doc_count": 14
+        },
+        {
+            "key": "điện thoại",
+            "doc_count": 14
+        },
+        {
+            "key": "pháp luật",
+            "doc_count": 13
+        },
+        {
+            "key": "thực hiện",
+            "doc_count": 13
+        },
+        {
+            "key": "yêu cầu",
+            "doc_count": 13
+        },
+        {
+            "key": "củng cố",
+            "doc_count": 12
+        },
+        {
+            "key": "di chuyển",
+            "doc_count": 12
+        },
+        {
+            "key": "hồ sơ",
+            "doc_count": 12
+        },
+        {
+            "key": "thời điểm",
+            "doc_count": 12
+        },
+        {
+            "key": "xử lý",
+            "doc_count": 12
+        },
+        {
+            "key": "khẩn trương",
+            "doc_count": 11
+        },
+        {
+            "key": "làm việc",
+            "doc_count": 11
+        },
+        {
+            "key": "quyết liệt",
+            "doc_count": 11
+        },
+        {
+            "key": "tinh thần",
+            "doc_count": 11
+        },
+        {
+            "key": "tiến hành",
+            "doc_count": 11
+        },
+        {
+            "key": "tẩu thoát",
+            "doc_count": 11
+        },
+        {
+            "key": "ban đầu",
+            "doc_count": 10
+        },
+        {
+            "key": "khống chế",
+            "doc_count": 10
+        },
+        {
+            "key": "liên nghĩa",
+            "doc_count": 10
+        },
+        {
+            "key": "phiến tháo",
+            "doc_count": 10
+        },
+        {
+            "key": "thông tin",
+            "doc_count": 10
+        },
+        {
+            "key": "thị trấn",
+            "doc_count": 10
+        },
+        {
+            "key": "điều tra",
+            "doc_count": 10
+        },
+        {
+            "key": "mô tô",
+            "doc_count": 9
+        },
+        {
+            "key": "thường trú",
+            "doc_count": 9
+        },
+        {
+            "key": "trộm cắp",
+            "doc_count": 9
+        },
+        {
+            "key": "quốc lộ",
+            "doc_count": 8
+        },
+        {
+            "key": "tàu sa_chín",
+            "doc_count": 8
+        },
+        {
+            "key": "cơ quan",
+            "doc_count": 7
+        },
+        {
+            "key": "lập tức",
+            "doc_count": 6
+        },
+        {
+            "key": "tháo chạy",
+            "doc_count": 6
+        },
+        {
+            "key": "vụ việc",
+            "doc_count": 6
+        },
+        {
+            "key": "áo khoác",
+            "doc_count": 6
+        },
+        {
+            "key": "bình thuận",
+            "doc_count": 5
+        },
+        {
+            "key": "chức năng",
+            "doc_count": 5
+        },
+        {
+            "key": "có mặt",
+            "doc_count": 5
+        },
+        {
+            "key": "liên quan",
+            "doc_count": 5
+        },
+        {
+            "key": "phó giám_đốc",
+            "doc_count": 5
+        },
+        {
+            "key": "đe dọa",
+            "doc_count": 5
+        },
+        {
+            "key": "chỉ đạo",
+            "doc_count": 4
+        },
+        {
+            "key": "căng thẳng",
+            "doc_count": 4
+        },
+        {
+            "key": "ghi nhận",
+            "doc_count": 4
+        },
+        {
+            "key": "giám đốc",
+            "doc_count": 4
+        },
+        {
+            "key": "hiện trường",
+            "doc_count": 4
+        },
+        {
+            "key": "khoan nhượng",
+            "doc_count": 4
+        },
+        {
+            "key": "minh đương",
+            "doc_count": 4
+        },
+        {
+            "key": "nghẹt thở",
+            "doc_count": 4
+        },
+        {
+            "key": "nhanh chóng",
+            "doc_count": 4
+        },
+        {
+            "key": "phan rang",
+            "doc_count": 4
+        },
+        {
+            "key": "phương tiện",
+            "doc_count": 4
+        },
+        {
+            "key": "phước hà",
+            "doc_count": 4
+        },
+        {
+            "key": "tháp chàm",
+            "doc_count": 4
+        },
+        {
+            "key": "thượng tá",
+            "doc_count": 4
+        },
+        {
+            "key": "thủ trưởng",
+            "doc_count": 4
+        },
+        {
+            "key": "tà hine",
+            "doc_count": 4
+        },
+        {
+            "key": "tưởng chừng",
+            "doc_count": 4
+        },
+        {
+            "key": "tổ chức",
+            "doc_count": 4
+        },
+        {
+            "key": "đe dọα",
+            "doc_count": 4
+        },
+        {
+            "key": "đại tá",
+            "doc_count": 4
+        },
+        {
+            "key": "đậu xuân_bảo",
+            "doc_count": 4
+        },
+        {
+            "key": "bàn giao_dịch",
+            "doc_count": 3
+        }
+	]
+}
+
+// Bar Breakdown
+{
+    "title": "Conservation Breakdown By Sentiment",   
+    "x": ["2024-05-10", "2024-05-11", "2024-05-12"],
+    "y": [[10, 20, 15], [30, 45, 25], [5, 8, 10]], 
+    "labels": ["Neutral", "Positive", "Negative"],
+    "colors": ["gray", "green", "red"]
+}
+
+// Bar 
+{
+	"title": "SOV By Brand",
+	"x": ["Vinamilk", "TH True Milk", "Nutifood"],
+	"y": [45, 30, 25],
+	"xlabel": "Brand",
+	"ylabel": "Share of Voice (SOV)"
+}
+
+// Pie Sentiement
+{
+    "title": "Sentiment Breakdown",
+    "total": 2175,
+    "data": 
+    [
+      {"label": "Positive", "count": 902, "percentage": 41.47, "color": "#58B3F3"},
+      {"label": "Negative", "count": 572, "percentage": 26.30, "color": "#70A8FF"},
+      {"label": "Neutral", "count": 332, "percentage": 15.26, "color": "#D8874D"}
+    ]
+}
+
+// Pie channel 
+{
+    "title": "Channel Breakdown",
+    "total": 2175,
+    "data": 
+    [
+      {"label": "Facebook Group", "count": 902, "percentage": 41.47, "color": "#58B3F3"},
+      {"label": "Facebook Pages", "count": 572, "percentage": 26.30, "color": "#70A8FF"},
+      {"label": "News", "count": 332, "percentage": 15.26, "color": "#D8874D"},
+      {"label": "Facebook Users", "count": 266, "percentage": 12.23, "color": "#5E89FF"},
+      {"label": "Tiktok", "count": 82, "percentage": 3.77, "color": "#E6577F"},
+      {"label": "Forum", "count": 13, "percentage": 0.60, "color": "#60C0BA"},
+      {"label": "Youtube", "count": 7, "percentage": 0.32, "color": "#C7433D"},
+      {"label": "Threads", "count": 1, "percentage": 0.05, "color": "#1E1E1E"}
+    ]
+}
