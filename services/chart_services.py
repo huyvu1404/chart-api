@@ -13,7 +13,7 @@ random.seed(40)
 async def generate_bar_chart(request: BarChartRequest):
     fig, ax = plt.subplots()
     bottom = np.zeros(len(request.x))
-    # if y is a list of lists, stack them
+   
     if isinstance(request.y[0], list):
         for i, y in enumerate(request.y):
             if isinstance(y, list):
@@ -22,7 +22,7 @@ async def generate_bar_chart(request: BarChartRequest):
     else:
         ax.bar(request.x, request.y, color=request.colors)
     
-    ax.set_title(request.title)
+    fig.suptitle(request.title, x=0.01, ha='left', fontsize=14, weight='bold')
     ax.set_xlabel(request.xlabel)
     ax.set_ylabel(request.ylabel)
     ax.legend()
@@ -126,7 +126,7 @@ async def generate_line_chart(request: LineChartRequest):
     else:
         ax.plot(request.x, request.y, color=request.colors, label=request.labels[0])
     
-    ax.set_title(request.title)
+    fig.suptitle(request.title, x=0.01, ha='left', fontsize=14, weight='bold')
     ax.set_xlabel(request.xlabel)
     ax.set_ylabel(request.ylabel)
     ax.tick_params(axis='y', length=0)
@@ -198,7 +198,6 @@ async def generate_sankey_chart(request: SanKeyChartRequest):
     value_list = []
     custom_data = []
 
-    # Xử lý các luồng từ source -> sentiment
     for link in request.data["links"]:
         if 'source' in link and 'sentiment' in link:
             source_name = link['source']
@@ -208,7 +207,6 @@ async def generate_sankey_chart(request: SanKeyChartRequest):
             target_list.append(node_indices[sentiment_name])
             value_list.append(value)
 
-    # Xử lý các luồng từ sentiment -> topic
     for link in request.data["links"]:
         if 'sentiment' in link and 'topic' in link:
             sentiment_name = link['sentiment']
@@ -271,13 +269,12 @@ async def generate_sankey_chart(request: SanKeyChartRequest):
         )
     )])
 
-    # Add title and layout use bold font
     fig.update_layout(
         width=1000,    
         height=600,
-        title_text=request.title,
-        font_size=10,
-        title_x=0.5
+        title_text=f"<b>{request.title}</b>",  # In đậm
+        title_x=0.1, 
+        font_size=10
     )
 
     buf = BytesIO()
