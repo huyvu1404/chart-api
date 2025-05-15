@@ -101,7 +101,7 @@ async def generate_wordcloud(request: WordCloudRequest):
         width=800,
         height=400,
         background_color='white',
-        font_path='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf' 
+        font_path='/fonts/DejaVuSans.ttf' 
     ).generate_from_frequencies(word_freq)
 
     plt.figure(figsize=(10, 5))

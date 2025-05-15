@@ -5,7 +5,7 @@ from services.chart_services import *
 chart = APIRouter()
 
 @chart.post("/sankey-chart")
-async def sankey_png(request: SanKeyChartRequest):
+async def create_sankey_chart(request: SanKeyChartRequest):
     return await generate_sankey_chart(request)
     
 @chart.post("/sov")
