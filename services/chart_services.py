@@ -10,6 +10,8 @@ from models import SanKeyChartRequest, PieChartRequest, BarChartRequest, LineCha
 
 
 async def generate_bar_chart(request: BarChartRequest):
+    if not request.x or not request.y:
+        return StreamingResponse(BytesIO(), media_type="image/png")
     fig, ax = plt.subplots()
     bottom = np.zeros(len(request.x))
    
@@ -35,6 +37,8 @@ async def generate_bar_chart(request: BarChartRequest):
     return StreamingResponse(buf, media_type="image/png")
 
 async def generate_top_social_posts(request: BarChartRequest):
+    if not request.x or not request.y:
+        return StreamingResponse(BytesIO(), media_type="image/png")
     fig, ax = plt.subplots()
     categories = request.x
     total_engagements, sentiment_score = request.y
@@ -71,6 +75,8 @@ async def generate_top_social_posts(request: BarChartRequest):
     return StreamingResponse(buf, media_type="image/png")
 
 async def generate_pie_chart(request: PieChartRequest):
+    if not request.data:
+        return StreamingResponse(BytesIO(), media_type="image/png")
     sizes = [d.count for d in request.data]
     labels = [f"{d.label} ({d.count})\n{d.percentage:.2f}%" for d in request.data]
     colors = [d.color for d in request.data]
@@ -95,6 +101,8 @@ async def generate_pie_chart(request: PieChartRequest):
 
 
 async def generate_wordcloud(request: WordCloudRequest):
+    if not request.data:
+        return StreamingResponse(BytesIO(), media_type="image/png")
     word_freq = {item["key"]: item["doc_count"] for item in request.data}
     wordcloud = WordCloud(
         width=800,
@@ -116,14 +124,15 @@ async def generate_wordcloud(request: WordCloudRequest):
     return StreamingResponse(buf, media_type="image/png")
 
 async def generate_line_chart(request: LineChartRequest):
-
+    if not request.x or not request.y:
+        return StreamingResponse(BytesIO(), media_type="image/png")
     fig, ax = plt.subplots()
     if isinstance(request.y[0], list):
         for i, y in enumerate(request.y):
             if isinstance(y, list):
-                ax.plot(request.x, y, color=request.colors[i], label=request.labels[i])
+                ax.plot(request.x[:len(y)], y, color=request.colors[i], label=request.labels[i])
     else:
-        ax.plot(request.x, request.y, color=request.colors, label=request.labels[0])
+        ax.plot(request.x[:len(y)], request.y, color=request.colors, label=request.labels[0])
     
     fig.suptitle(request.title, x=0.01, ha='left', fontsize=14, weight='bold')
     ax.set_xlabel(request.xlabel)
@@ -143,10 +152,11 @@ async def generate_line_chart(request: LineChartRequest):
 
 async def generate_trend_chart(request: LineChartRequest):
     fig, ax = plt.subplots()
-
-    this_week = request.y[1]
-    last_week = request.y[0]
-
+    
+    last_week = request.y[0] if len(request.y) > 0 else []
+    this_week = request.y[1] if len(request.y) > 1 else []
+    if not this_week and not last_week:
+        return StreamingResponse(BytesIO(), media_type="image/png")
     ax.plot(request.x[:len(this_week)], this_week, color=request.colors[1], label=request.labels[1], marker='o')
     ax.plot(request.x[:len(last_week)], last_week, color=request.colors[0], label=request.labels[0], linestyle='--', marker='o')
 
@@ -185,10 +195,12 @@ async def generate_trend_chart(request: LineChartRequest):
     return StreamingResponse(buf, media_type="image/png")
 
 async def generate_sankey_chart(request: SanKeyChartRequest):
-    sources = request.data["sources"]
-    sentiments = request.data["sentiments"]
-    topics = request.data["topics"]
-
+    sources = request.data["sources"] if request.data.get("sources") else []
+    sentiments = request.data["sentiments"] if request.data.get("sentiments") else []
+    topics = request.data["topics"] if request.data.get("topics") else []
+    
+    if not sources and not sentiments and not topics:
+        return StreamingResponse(BytesIO(), media_type="image/png")
     labels = sources + sentiments + topics
     node_indices = {label: idx for idx, label in enumerate(labels)}
     
