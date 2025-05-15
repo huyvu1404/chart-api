@@ -12,9 +12,9 @@ from models import SanKeyChartRequest, PieChartRequest, BarChartRequest, LineCha
 async def generate_bar_chart(request: BarChartRequest):
     if not request.x or not request.y:
         return StreamingResponse(BytesIO(), media_type="image/png")
-    fig, ax = plt.subplots()
+    
     bottom = np.zeros(len(request.x))
-   
+    fig, ax = plt.subplots()
     if isinstance(request.y[0], list):
         for i, y in enumerate(request.y):
             if isinstance(y, list):
@@ -39,11 +39,12 @@ async def generate_bar_chart(request: BarChartRequest):
 async def generate_top_social_posts(request: BarChartRequest):
     if not request.x or not request.y:
         return StreamingResponse(BytesIO(), media_type="image/png")
-    fig, ax = plt.subplots()
+    
     categories = request.x
     total_engagements, sentiment_score = request.y
     colors = request.colors
 
+    fig, ax = plt.subplots()
     ax.bar(categories, total_engagements, color=colors[0], label='Total Engagements')
     bars2 = ax.bar(categories, [-x/5 if x > 0 else 0 for x in sentiment_score], color=colors[1], label='Sentiment Score')
     
@@ -75,20 +76,30 @@ async def generate_top_social_posts(request: BarChartRequest):
     return StreamingResponse(buf, media_type="image/png")
 
 async def generate_pie_chart(request: PieChartRequest):
-    if not request.data:
+    if not request.values:
         return StreamingResponse(BytesIO(), media_type="image/png")
-    sizes = [d.count for d in request.data]
-    labels = [f"{d.label} ({d.count})\n{d.percentage:.2f}%" for d in request.data]
-    colors = [d.color for d in request.data]
+    total = sum(request.values)
+    sizes = request.values
+    labels = []
+    percentages = []
+    for label, value in zip(request.labels, request.values):
+        if value > 0:
+            percentage = (value / total) * 100
+        else:
+            percentage = 0
+        percentages.append(percentage)
+        labels.append(f"{label} ({value})\n{percentage:.2f}%")
+    
+    colors = request.colors
 
     fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(aspect="equal"))
 
     wedges, texts = ax.pie(sizes, colors=colors, wedgeprops=dict(width=0.3, edgecolor='white'), startangle=90)
 
-    ax.text(0, 0.1, f"{request.total:,}", fontsize=20, weight="bold", ha='center')
+    ax.text(0, 0.1, f"{total:,}", fontsize=20, weight="bold", ha='center')
     ax.text(0, -0.1, "Mentions", fontsize=12, color='gray', ha='center')
 
-    legend_labels = [f"{d.percentage:.2f}%  {d.label}  ({d.count})" for d in request.data]
+    legend_labels = [f"{percentage:.2f}%  {label}  ({value})" for percentage, label, value in zip(percentages, request.labels, request.values)]
     ax.legend(wedges, legend_labels, title=request.title, loc="center left", bbox_to_anchor=(1, 0.5))
 
     buf = BytesIO()
@@ -98,7 +109,6 @@ async def generate_pie_chart(request: PieChartRequest):
     plt.close()
 
     return StreamingResponse(buf, media_type="image/png")
-
 
 async def generate_wordcloud(request: WordCloudRequest):
     if not request.data:
@@ -151,31 +161,21 @@ async def generate_line_chart(request: LineChartRequest):
     return StreamingResponse(buf, media_type="image/png")
 
 async def generate_trend_chart(request: LineChartRequest):
-    fig, ax = plt.subplots()
-    
     last_week = request.y[0] if len(request.y) > 0 else []
     this_week = request.y[1] if len(request.y) > 1 else []
     if not this_week and not last_week:
         return StreamingResponse(BytesIO(), media_type="image/png")
-    ax.plot(request.x[:len(this_week)], this_week, color=request.colors[1], label=request.labels[1], marker='o')
+    fig, ax = plt.subplots()
     ax.plot(request.x[:len(last_week)], last_week, color=request.colors[0], label=request.labels[0], linestyle='--', marker='o')
+    ax.plot(request.x[:len(this_week)], this_week, color=request.colors[1], label=request.labels[1], marker='o')
 
     total_this_week = sum(this_week)
     total_last_week = sum(last_week)
-    if total_last_week > 0:
-        percentage_change = ((total_this_week - total_last_week) / total_last_week) * 100
-    else:
-        percentage_change = 0
-   
-    if "Negative" in request.title:
-        emoji = "😞"
-    elif "Positive" in request.title:
-        emoji = "😃"
+    percentage_change = ((total_this_week - total_last_week) / total_last_week) * 100 if total_last_week > 0 else 0
 
-    if total_this_week > total_last_week:
-        arrow = "⬆️"
-    else:
-        arrow = "⬇️"
+
+    emoji = "😞" if "Negative" in request.title else "😃"
+    arrow = "⬆️" if total_this_week > total_last_week else "⬇️"
 
     fig.suptitle(request.title, x=0.01, ha='left', fontsize=14, weight='bold')
     fig.text(0.1, 0.91, f"{total_this_week} {emoji} {arrow}{abs(percentage_change):.2f}% (compare to last week)", ha='left', va='top', fontsize=12)

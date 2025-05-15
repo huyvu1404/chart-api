@@ -5,12 +5,13 @@ class LabeledData(BaseModel):
     label: str
     count: int
     percentage: float
-    color: str 
+    color: Optional[str] = None 
 
 class PieChartRequest(BaseModel):
     title: str
-    total: int
-    data: List[LabeledData]
+    values: List[int]
+    labels: List[str]
+    colors: Optional[List[str]] = None
 
 class AxisLabels(BaseModel):
     title: str

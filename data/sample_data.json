@@ -54,377 +54,98 @@
 
 // Top Social
 {
-    "title": "Top Social Posts",
-    "x":  ["Ngân hàng SHB", "Chứng khoán SHS", "Hà Nội Của Tội", "Sài Gòn News"],
-    "y": [[40, 15, 10, 5], [100, 0, 0, 0]],
-    "colors": ["#FFA500", "#00CED1"]
-}
-
-// Line Trend 
-{
-    "title": "So sánh theo ngày giữa tuần này và tuần trước",
-    "xlabel": "Ngày",
-    "ylabel": "Số lượng",
-    "x": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    "y": [[20, 30, 25, 35, 40, 38, 50],[15, 28, 22, 30, 36, 33, 42]],
-		"labels": ["This Week", "Last Week"],
-    "colors": ["blue", "green"]
-}
-
-//Word Cloud 
-{
-	"title": "Positve WordCloud",
-	"data": [
-		{
-            "key": "ngân hàng",
-            "doc_count": 27
-        },
-        {
-            "key": "ninh thuận",
-            "doc_count": 23
-        },
-        {
-            "key": "xe máy",
-            "doc_count": 23
-        },
-        {
-            "key": "nhân viên",
-            "doc_count": 22
-        },
-        {
-            "key": "đức trọng",
-            "doc_count": 22
-        },
-        {
-            "key": "công an",
-            "doc_count": 20
-        },
-        {
-            "key": "lâm đồng",
-            "doc_count": 19
-        },
-        {
-            "key": "báo động",
-            "doc_count": 18
-        },
-        {
-            "key": "bảo vệ",
-            "doc_count": 18
-        },
-        {
-            "key": "lực lượng",
-            "doc_count": 18
-        },
-        {
-            "key": "tâu xá_phiến",
-            "doc_count": 18
-        },
-        {
-            "key": "đa quyn",
-            "doc_count": 17
-        },
-        {
-            "key": "bắt giữ",
-            "doc_count": 16
-        },
-        {
-            "key": "phú hội",
-            "doc_count": 16
-        },
-        {
-            "key": "quy định",
-            "doc_count": 16
-        },
-        {
-            "key": "địa bàn",
-            "doc_count": 16
-        },
-        {
-            "key": "ứng dụng",
-            "doc_count": 16
-        },
-        {
-            "key": "ba lô",
-            "doc_count": 15
-        },
-        {
-            "key": "giao dịch",
-            "doc_count": 15
-        },
-        {
-            "key": "đối tượng",
-            "doc_count": 15
-        },
-        {
-            "key": "hoảng sợ",
-            "doc_count": 14
-        },
-        {
-            "key": "hộp quẹt",
-            "doc_count": 14
-        },
-        {
-            "key": "khẩu trang",
-            "doc_count": 14
-        },
-        {
-            "key": "sử dụng",
-            "doc_count": 14
-        },
-        {
-            "key": "thuận nam",
-            "doc_count": 14
-        },
-        {
-            "key": "tiếp tục",
-            "doc_count": 14
-        },
-        {
-            "key": "tâu xá",
-            "doc_count": 14
-        },
-        {
-            "key": "điện thoại",
-            "doc_count": 14
-        },
-        {
-            "key": "pháp luật",
-            "doc_count": 13
-        },
-        {
-            "key": "thực hiện",
-            "doc_count": 13
-        },
-        {
-            "key": "yêu cầu",
-            "doc_count": 13
-        },
-        {
-            "key": "củng cố",
-            "doc_count": 12
-        },
-        {
-            "key": "di chuyển",
-            "doc_count": 12
-        },
-        {
-            "key": "hồ sơ",
-            "doc_count": 12
-        },
-        {
-            "key": "thời điểm",
-            "doc_count": 12
-        },
-        {
-            "key": "xử lý",
-            "doc_count": 12
-        },
-        {
-            "key": "khẩn trương",
-            "doc_count": 11
-        },
-        {
-            "key": "làm việc",
-            "doc_count": 11
-        },
-        {
-            "key": "quyết liệt",
-            "doc_count": 11
-        },
-        {
-            "key": "tinh thần",
-            "doc_count": 11
-        },
-        {
-            "key": "tiến hành",
-            "doc_count": 11
-        },
-        {
-            "key": "tẩu thoát",
-            "doc_count": 11
-        },
-        {
-            "key": "ban đầu",
-            "doc_count": 10
-        },
-        {
-            "key": "khống chế",
-            "doc_count": 10
-        },
-        {
-            "key": "liên nghĩa",
-            "doc_count": 10
-        },
-        {
-            "key": "phiến tháo",
-            "doc_count": 10
-        },
-        {
-            "key": "thông tin",
-            "doc_count": 10
-        },
-        {
-            "key": "thị trấn",
-            "doc_count": 10
-        },
-        {
-            "key": "điều tra",
-            "doc_count": 10
-        },
-        {
-            "key": "mô tô",
-            "doc_count": 9
-        },
-        {
-            "key": "thường trú",
-            "doc_count": 9
-        },
-        {
-            "key": "trộm cắp",
-            "doc_count": 9
-        },
-        {
-            "key": "quốc lộ",
-            "doc_count": 8
-        },
-        {
-            "key": "tàu sa_chín",
-            "doc_count": 8
-        },
-        {
-            "key": "cơ quan",
-            "doc_count": 7
-        },
-        {
-            "key": "lập tức",
-            "doc_count": 6
-        },
-        {
-            "key": "tháo chạy",
-            "doc_count": 6
-        },
-        {
-            "key": "vụ việc",
-            "doc_count": 6
-        },
-        {
-            "key": "áo khoác",
-            "doc_count": 6
-        },
-        {
-            "key": "bình thuận",
-            "doc_count": 5
-        },
-        {
-            "key": "chức năng",
-            "doc_count": 5
-        },
-        {
-            "key": "có mặt",
-            "doc_count": 5
-        },
-        {
-            "key": "liên quan",
-            "doc_count": 5
-        },
-        {
-            "key": "phó giám_đốc",
-            "doc_count": 5
-        },
-        {
-            "key": "đe dọa",
-            "doc_count": 5
-        },
-        {
-            "key": "chỉ đạo",
-            "doc_count": 4
-        },
-        {
-            "key": "căng thẳng",
-            "doc_count": 4
-        },
-        {
-            "key": "ghi nhận",
-            "doc_count": 4
-        },
-        {
-            "key": "giám đốc",
-            "doc_count": 4
-        },
-        {
-            "key": "hiện trường",
-            "doc_count": 4
-        },
-        {
-            "key": "khoan nhượng",
-            "doc_count": 4
-        },
-        {
-            "key": "minh đương",
-            "doc_count": 4
-        },
-        {
-            "key": "nghẹt thở",
-            "doc_count": 4
-        },
-        {
-            "key": "nhanh chóng",
-            "doc_count": 4
-        },
-        {
-            "key": "phan rang",
-            "doc_count": 4
-        },
-        {
-            "key": "phương tiện",
-            "doc_count": 4
-        },
-        {
-            "key": "phước hà",
-            "doc_count": 4
-        },
-        {
-            "key": "tháp chàm",
-            "doc_count": 4
-        },
-        {
-            "key": "thượng tá",
-            "doc_count": 4
-        },
-        {
-            "key": "thủ trưởng",
-            "doc_count": 4
-        },
-        {
-            "key": "tà hine",
-            "doc_count": 4
-        },
-        {
-            "key": "tưởng chừng",
-            "doc_count": 4
-        },
-        {
-            "key": "tổ chức",
-            "doc_count": 4
-        },
-        {
-            "key": "đe dọα",
-            "doc_count": 4
-        },
-        {
-            "key": "đại tá",
-            "doc_count": 4
-        },
-        {
-            "key": "đậu xuân_bảo",
-            "doc_count": 4
-        },
-        {
-            "key": "bàn giao_dịch",
-            "doc_count": 3
-        }
-	]
-}
+    "title": "Positve WordCloud",
+    "data": [
+      { "key": "ngân hàng", "doc_count": 27 },
+      { "key": "ninh thuận", "doc_count": 23 },
+      { "key": "xe máy", "doc_count": 23 },
+      { "key": "nhân viên", "doc_count": 22 },
+      { "key": "đức trọng", "doc_count": 22 },
+      { "key": "công an", "doc_count": 20 },
+      { "key": "lâm đồng", "doc_count": 19 },
+      { "key": "báo động", "doc_count": 18 },
+      { "key": "bảo vệ", "doc_count": 18 },
+      { "key": "lực lượng", "doc_count": 18 },
+      { "key": "tâu xá_phiến", "doc_count": 18 },
+      { "key": "đa quyn", "doc_count": 17 },
+      { "key": "bắt giữ", "doc_count": 16 },
+      { "key": "phú hội", "doc_count": 16 },
+      { "key": "quy định", "doc_count": 16 },
+      { "key": "địa bàn", "doc_count": 16 },
+      { "key": "ứng dụng", "doc_count": 16 },
+      { "key": "ba lô", "doc_count": 15 },
+      { "key": "giao dịch", "doc_count": 15 },
+      { "key": "đối tượng", "doc_count": 15 },
+      { "key": "hoảng sợ", "doc_count": 14 },
+      { "key": "hộp quẹt", "doc_count": 14 },
+      { "key": "khẩu trang", "doc_count": 14 },
+      { "key": "sử dụng", "doc_count": 14 },
+      { "key": "thuận nam", "doc_count": 14 },
+      { "key": "tiếp tục", "doc_count": 14 },
+      { "key": "tâu xá", "doc_count": 14 },
+      { "key": "điện thoại", "doc_count": 14 },
+      { "key": "pháp luật", "doc_count": 13 },
+      { "key": "thực hiện", "doc_count": 13 },
+      { "key": "yêu cầu", "doc_count": 13 },
+      { "key": "củng cố", "doc_count": 12 },
+      { "key": "di chuyển", "doc_count": 12 },
+      { "key": "hồ sơ", "doc_count": 12 },
+      { "key": "thời điểm", "doc_count": 12 },
+      { "key": "xử lý", "doc_count": 12 },
+      { "key": "khẩn trương", "doc_count": 11 },
+      { "key": "làm việc", "doc_count": 11 },
+      { "key": "quyết liệt", "doc_count": 11 },
+      { "key": "tinh thần", "doc_count": 11 },
+      { "key": "tiến hành", "doc_count": 11 },
+      { "key": "tẩu thoát", "doc_count": 11 },
+      { "key": "ban đầu", "doc_count": 10 },
+      { "key": "khống chế", "doc_count": 10 },
+      { "key": "liên nghĩa", "doc_count": 10 },
+      { "key": "phiến tháo", "doc_count": 10 },
+      { "key": "thông tin", "doc_count": 10 },
+      { "key": "thị trấn", "doc_count": 10 },
+      { "key": "điều tra", "doc_count": 10 },
+      { "key": "mô tô", "doc_count": 9 },
+      { "key": "thường trú", "doc_count": 9 },
+      { "key": "trộm cắp", "doc_count": 9 },
+      { "key": "quốc lộ", "doc_count": 8 },
+      { "key": "tàu sa_chín", "doc_count": 8 },
+      { "key": "cơ quan", "doc_count": 7 },
+      { "key": "lập tức", "doc_count": 6 },
+      { "key": "tháo chạy", "doc_count": 6 },
+      { "key": "vụ việc", "doc_count": 6 },
+      { "key": "áo khoác", "doc_count": 6 },
+      { "key": "bình thuận", "doc_count": 5 },
+      { "key": "chức năng", "doc_count": 5 },
+      { "key": "có mặt", "doc_count": 5 },
+      { "key": "liên quan", "doc_count": 5 },
+      { "key": "phó giám_đốc", "doc_count": 5 },
+      { "key": "đe dọa", "doc_count": 5 },
+      { "key": "chỉ đạo", "doc_count": 4 },
+      { "key": "căng thẳng", "doc_count": 4 },
+      { "key": "ghi nhận", "doc_count": 4 },
+      { "key": "giám đốc", "doc_count": 4 },
+      { "key": "hiện trường", "doc_count": 4 },
+      { "key": "khoan nhượng", "doc_count": 4 },
+      { "key": "minh đương", "doc_count": 4 },
+      { "key": "nghẹt thở", "doc_count": 4 },
+      { "key": "nhanh chóng", "doc_count": 4 },
+      { "key": "phan rang", "doc_count": 4 },
+      { "key": "phương tiện", "doc_count": 4 },
+      { "key": "phước hà", "doc_count": 4 },
+      { "key": "tháp chàm", "doc_count": 4 },
+      { "key": "thượng tá", "doc_count": 4 },
+      { "key": "thủ trưởng", "doc_count": 4 },
+      { "key": "tà hine", "doc_count": 4 },
+      { "key": "tưởng chừng", "doc_count": 4 },
+      { "key": "tổ chức", "doc_count": 4 },
+      { "key": "đe dọα", "doc_count": 4 },
+      { "key": "đại tá", "doc_count": 4 },
+      { "key": "đậu xuân_bảo", "doc_count": 4 },
+      { "key": "bàn giao_dịch", "doc_count": 3 }
+    ]
+  }
+  
 
 // Bar Breakdown
 {
