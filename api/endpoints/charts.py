@@ -30,7 +30,7 @@ async def create_sentiment_breakdown(request: PieChartRequest):
 
 @chart.post("/trend")
 async def create_trend_chart(request: LineChartRequest):
-    return await generate_line_chart(request)
+    return await generate_trend_chart(request)
 
 @chart.post("/conservation-breakdown")
 async def create_conservation_breakdown(request: BarChartRequest):

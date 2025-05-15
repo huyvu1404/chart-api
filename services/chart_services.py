@@ -142,6 +142,49 @@ async def generate_line_chart(request: LineChartRequest):
 
     return StreamingResponse(buf, media_type="image/png")
 
+async def generate_trend_chart(request: LineChartRequest):
+    fig, ax = plt.subplots()
+
+    this_week = request.y[1]
+    last_week = request.y[0]
+
+    ax.plot(request.x, this_week, color=request.colors[1], label=request.labels[1], marker='o')
+    ax.plot(request.x, last_week, color=request.colors[0], label=request.labels[0], linestyle='--', marker='o')
+
+    total_this_week = sum(this_week)
+    total_last_week = sum(last_week)
+    if total_last_week > 0:
+        percentage_change = ((total_this_week - total_last_week) / total_last_week) * 100
+    else:
+        percentage_change = 0
+   
+    if "Negative" in request.title:
+        emoji = "😞"
+    elif "Positive" in request.title:
+        emoji = "😃"
+
+    if total_this_week > total_last_week:
+        arrow = "⬆️"
+    else:
+        arrow = "⬇️"
+
+    fig.suptitle(request.title, x=0.01, ha='left', fontsize=14, weight='bold')
+    fig.text(0.1, 0.91, f"{total_this_week} {emoji} {arrow}{abs(percentage_change):.2f}% (compare to last week)", ha='left', va='top', fontsize=12)
+    ax.set_xlabel(request.xlabel)
+    ax.set_ylabel(request.ylabel)
+    ax.tick_params(axis='y', length=0)
+    ax.legend(loc='upper left', bbox_to_anchor=(1, 1), frameon=False)
+    for spine in ['top', 'right', 'left', 'bottom']:
+        ax.spines[spine].set_visible(False)
+    
+    buf = BytesIO()
+    plt.tight_layout()
+    plt.savefig(buf, format="png")
+    buf.seek(0)
+    plt.close(fig)
+
+    return StreamingResponse(buf, media_type="image/png")
+
 async def generate_sankey_chart(request: SanKeyChartRequest):
     sources = request.data["sources"]
     sentiments = request.data["sentiments"]
@@ -203,11 +246,11 @@ async def generate_sankey_chart(request: SanKeyChartRequest):
     node_colors = [sentiment_colors.get(label, get_random_color()) for label in labels]
 
     def hex_to_rgba(hex_color, alpha):
-        rgb = mcolors.to_rgb(hex_color)  
+        rgb = mcolors.to_rgb(hex_color)  # (r, g, b) as floats [0-1]
         return f"rgba({int(rgb[0]*255)}, {int(rgb[1]*255)}, {int(rgb[2]*255)}, {alpha})"
 
-    link_colors = [hex_to_rgba(node_colors[src], 0.2) for src in source_list]        
-    link_hovercolors = [hex_to_rgba(node_colors[src], 0.6) for src in source_list]   
+    link_colors = [hex_to_rgba(node_colors[src], 0.2) for src in source_list]         # Nhạt (mặc định)
+    link_hovercolors = [hex_to_rgba(node_colors[src], 0.6) for src in source_list]    # Đậm hơn khi hover
 
     fig = go.Figure(data=[go.Sankey(
         node=dict(
