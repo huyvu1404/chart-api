@@ -203,11 +203,11 @@ async def generate_sankey_chart(request: SanKeyChartRequest):
     node_colors = [sentiment_colors.get(label, get_random_color()) for label in labels]
 
     def hex_to_rgba(hex_color, alpha):
-        rgb = mcolors.to_rgb(hex_color)  # (r, g, b) as floats [0-1]
+        rgb = mcolors.to_rgb(hex_color)  
         return f"rgba({int(rgb[0]*255)}, {int(rgb[1]*255)}, {int(rgb[2]*255)}, {alpha})"
 
-    link_colors = [hex_to_rgba(node_colors[src], 0.2) for src in source_list]         # Nhạt (mặc định)
-    link_hovercolors = [hex_to_rgba(node_colors[src], 0.6) for src in source_list]    # Đậm hơn khi hover
+    link_colors = [hex_to_rgba(node_colors[src], 0.2) for src in source_list]        
+    link_hovercolors = [hex_to_rgba(node_colors[src], 0.6) for src in source_list]   
 
     fig = go.Figure(data=[go.Sankey(
         node=dict(
