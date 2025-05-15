@@ -8,7 +8,6 @@ from wordcloud import WordCloud
 from fastapi.responses import StreamingResponse
 from models import SanKeyChartRequest, PieChartRequest, BarChartRequest, LineChartRequest, WordCloudRequest
 
-random.seed(40)
 
 async def generate_bar_chart(request: BarChartRequest):
     fig, ax = plt.subplots()
@@ -148,8 +147,8 @@ async def generate_trend_chart(request: LineChartRequest):
     this_week = request.y[1]
     last_week = request.y[0]
 
-    ax.plot(request.x, this_week, color=request.colors[1], label=request.labels[1], marker='o')
-    ax.plot(request.x, last_week, color=request.colors[0], label=request.labels[0], linestyle='--', marker='o')
+    ax.plot(request.x[:len(this_week)], this_week, color=request.colors[1], label=request.labels[1], marker='o')
+    ax.plot(request.x[:len(last_week)], last_week, color=request.colors[0], label=request.labels[0], linestyle='--', marker='o')
 
     total_this_week = sum(this_week)
     total_last_week = sum(last_week)
@@ -238,17 +237,18 @@ async def generate_sankey_chart(request: SanKeyChartRequest):
         "Negative": "#f53105"
     }
 
+    random.seed(40)
     def get_random_color():
         return "#%06x" % random.randint(0, 0xFFFFFF)
 
     node_colors = [sentiment_colors.get(label, get_random_color()) for label in labels]
 
     def hex_to_rgba(hex_color, alpha):
-        rgb = mcolors.to_rgb(hex_color)  # (r, g, b) as floats [0-1]
+        rgb = mcolors.to_rgb(hex_color)  
         return f"rgba({int(rgb[0]*255)}, {int(rgb[1]*255)}, {int(rgb[2]*255)}, {alpha})"
 
-    link_colors = [hex_to_rgba(node_colors[src], 0.2) for src in source_list]         # Nhạt (mặc định)
-    link_hovercolors = [hex_to_rgba(node_colors[src], 0.6) for src in source_list]    # Đậm hơn khi hover
+    link_colors = [hex_to_rgba(node_colors[src], 0.2) for src in source_list]        
+    link_hovercolors = [hex_to_rgba(node_colors[src], 0.6) for src in source_list]  
 
     fig = go.Figure(data=[go.Sankey(
         node=dict(
