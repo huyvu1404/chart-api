@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from models.chart_models import SanKeyChartRequest, BarChartRequest, PieChartRequest, LineChartRequest, WordCloudRequest
+from models.chart_models import TableRequest, SanKeyChartRequest, BarChartRequest, PieChartRequest, LineChartRequest, WordCloudRequest
 from services.chart_services import *
 
 chart = APIRouter()
@@ -36,3 +36,14 @@ async def create_trend_chart(request: LineChartRequest):
 async def create_conservation_breakdown(request: BarChartRequest):
     return await generate_bar_chart(request)
 
+@chart.post("/top-sources")
+async def create_top_sources(request: TableRequest):
+    return await generate_top_sources(request)
+
+@chart.post("/overview")
+async def create_overview(request: TableRequest):
+    return await generate_overview(request)
+
+@chart.post("/brand-attribute")
+async def create_brand_attribute(request: TableRequest):
+    return await generate_brand_attribute(request)

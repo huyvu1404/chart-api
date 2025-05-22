@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import Optional, List, Union
 
 class LabeledData(BaseModel):
@@ -14,7 +14,7 @@ class PieChartRequest(BaseModel):
     colors: Optional[List[str]] = None
 
 class AxisLabels(BaseModel):
-    title: str
+    title: Optional[str] = None
     xlabel: Optional[str] = None
     ylabel: Optional[str] = None
 
@@ -25,10 +25,12 @@ class BarChartRequest(AxisLabels):
     colors: Optional[Union[str, List[str]]] = Field(default="blue")
 
 class LineChartRequest(AxisLabels):
-    x: List[str]
-    y: Union[List[int], List[List[int]]]
+    x: Optional[List[str]] = None
+    y: Optional[Union[List[int], List[List[int]]]] = None
     labels : Optional[List[str]] = None
     colors: Optional[Union[str, List[str]]] = Field(default="blue")
+    
+
 
 class WordCloudRequest(BaseModel):
     title: str
@@ -38,3 +40,20 @@ class WordCloudRequest(BaseModel):
 class SanKeyChartRequest(BaseModel):
     title: str
     data: dict
+class TableData(BaseModel):
+    title: str
+    column_labels: Optional[List[str]] = None
+    total: Optional[int] = None
+    net_sentiment_score: Optional[float] = None
+    rows: List[List[Union[str, int]]]
+
+class TableRequest(BaseModel):
+    data: Optional[Union[List[TableData], TableData]] = Field(default_factory=dict)
+
+    @model_validator(mode="before")
+    def normalize_data(cls, values):
+        data = values.get("data")
+        if isinstance(data, dict) and not data:
+            # Nếu data là {}, thì coi như không có
+            values["data"] = None
+        return values

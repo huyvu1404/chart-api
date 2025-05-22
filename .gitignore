@@ -3,3 +3,7 @@ __pycache__/
 # ignore venv
 venv/
 .venv/
+# ignore test files
+test
+# ignore data directory
+data/
