@@ -41,7 +41,7 @@ class SanKeyChartRequest(BaseModel):
     title: str
     data: dict
 class TableData(BaseModel):
-    title: str
+    title: Optional[str] = None
     column_labels: Optional[List[str]] = None
     total: Optional[int] = None
     net_sentiment_score: Optional[float] = None

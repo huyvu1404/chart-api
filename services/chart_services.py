@@ -34,45 +34,92 @@ def get_normalized_col_widths(table):
 
     return col_widths
 
+
+def get_max_text_widths(rows_data, column_labels=None, font_size=10):
+
+    num_cols = len(column_labels) if column_labels else len(rows_data[0])
+    col_max_widths = {i: 0 for i in range(num_cols)}
+
+    full_data = [column_labels] + rows_data if column_labels else rows_data
+    for row in full_data:
+        for col, val in enumerate(row):
+            text = str(val)
+            width = len(text) + 10  
+            if width > col_max_widths[col]:
+                col_max_widths[col] = width
+
+    total_width = sum(col_max_widths.values())
+    for col in col_max_widths:
+        col_max_widths[col] = col_max_widths[col] / total_width
+
+    return col_max_widths
+
 async def generate_bar_chart(request: BarChartRequest):
     if not request.x or not request.y:
         return StreamingResponse(BytesIO(), media_type="image/png")
-    
-    bottom = np.zeros(len(request.x))
-    fig, ax = plt.subplots(figsize=(14, 8)) 
-    bar_width = 0.25
-    max_value = 0
-    if isinstance(request.y[0], list):
-        for i, y in enumerate(request.y):
-            if isinstance(y, list):
-                max_y = max(y)
-                max_value = max(max_value, max_y)
-                ax.bar(request.x, y, width=bar_width, bottom=bottom, color=request.colors[i], label=request.labels[i])
-                bottom += y
+
+    x = request.x
+    y = request.y
+    len_x = len(x)
+
+    # Nếu chỉ có 1 giá trị x, thêm đệm trái và phải
+    if len_x == 1:
+        x = [""] + x + [""]
+        for i in range(len(y)):
+            if isinstance(y[i], list):
+                y[i] = [0] + y[i] + [0]
+        len_x = len(x)  # cập nhật lại độ dài sau khi thêm
     else:
-        ax.bar(request.x, request.y, color=request.colors)
-    
+        # Nếu không thì giữ nguyên
+        y = y
+
+    # Tạo các trục và chuẩn bị dữ liệu
+    x_pos = np.arange(len_x)
+    bottom = np.zeros(len_x)
+
+    fig, ax = plt.subplots(figsize=(len_x + 3, 5))
+    bar_width = 0.2
+    max_value = 0
+
+    # Vẽ stacked bar nếu y là list of lists
+    if isinstance(y[0], list):
+        for i, y_i in enumerate(y):
+            if isinstance(y_i, list):
+                max_y = max(y_i)
+                max_value = max(max_value, max_y)
+                ax.bar(x_pos, y_i, width=bar_width, bottom=bottom, color=request.colors[i], label=request.labels[i])
+                bottom += y_i
+    else:
+        ax.bar(x_pos, y, color=request.colors)
+
+    # Gắn nhãn x
+    ax.set_xticks(x_pos)
+    ax.set_xticklabels(x)
+
+    # Thiết lập trục y
     ylim = int(np.ceil(max_value / 10) * 10)
-    step = int(np.ceil(ylim / 50) * 10) 
+    step = int(np.ceil(ylim / 50) * 10)
     ax.set_ylim(-step, ylim)
     grid_yticks = np.arange(-step, ylim + step, step)
     ax.set_yticks(grid_yticks)
     ax.set_yticklabels([str(tick) if tick >= 0 else None for tick in grid_yticks])
+
+    # Tùy chỉnh giao diện
     ax.tick_params(axis='y', length=0)
     ax.tick_params(axis='x', length=0)
-    fig.suptitle(request.title, x=0.01, ha='left', fontsize=14, weight='bold')
-    ax.set_xlabel(request.xlabel)
-    ax.set_ylabel(request.ylabel)
+    fig.suptitle(request.title, x=0.01, y=0.98, ha='left', fontsize=16, weight='bold')
+    fig.subplots_adjust(top=0.88)
     ax.grid(True, which='major', axis='y', linestyle='--', linewidth=0.5, alpha=0.7)
-    
-    ax.legend()  
+    ax.legend(loc='lower center', bbox_to_anchor=(1, 1), frameon=False)
     for spine in ['top', 'right', 'left', 'bottom']:
         ax.spines[spine].set_visible(False)
+
+    # Xuất ảnh
     buf = BytesIO()
     plt.tight_layout()
     plt.savefig(buf, format="png")
     buf.seek(0)
-    plt.close(fig)  
+    plt.close(fig)
 
     return StreamingResponse(buf, media_type="image/png")
 
@@ -149,7 +196,20 @@ async def generate_pie_chart(request: PieChartRequest):
     ax.text(0, -0.1, "Mentions", fontsize=12, color='gray', ha='center')
 
     legend_labels = [f"{percentage:.2f}%  {label}  ({value})" for percentage, label, value in zip(percentages, request.labels, request.values)]
-    ax.legend(wedges, legend_labels, title=request.title, loc="center left", bbox_to_anchor=(1, 0.5))
+    legend = ax.legend(wedges, legend_labels, loc="center left", bbox_to_anchor=(1, 0.5), fontsize=10, frameon=False)
+    for text in legend.get_texts():
+        text.set_fontweight("bold")
+        text.set_color("#555")  
+    fig.text(
+        0.01, 0.8,  
+        request.title,
+        ha='left',
+        va='top',
+        fontsize=14,
+        fontweight='bold',
+        color='#333'  
+    )
+
 
     buf = BytesIO()
     plt.tight_layout()
@@ -163,10 +223,12 @@ async def generate_wordcloud(request: WordCloudRequest):
     if not request.data:
         return StreamingResponse(BytesIO(), media_type="image/png")
     word_freq = {item["key"]: item["doc_count"] for item in request.data}
+    color = 'Greens_r' if 'Positive' in request.title else 'Reds_r'
     wordcloud = WordCloud(
         width=800,
         height=400,
         background_color='white',
+        colormap=color,
         font_path='/fonts/DejaVuSans.ttf' 
     ).generate_from_frequencies(word_freq)
 
@@ -212,33 +274,68 @@ async def generate_line_chart(request: LineChartRequest):
 async def generate_trend_chart(request: LineChartRequest):
     if not request.x or not request.y:
         return StreamingResponse(BytesIO(), media_type="image/png")
+    
     current = request.y[0] if len(request.y) > 0 else []
     previous = request.y[1] if len(request.y) > 1 else []
-    
-    fig, ax = plt.subplots()
-    ax.plot(request.x[:len(previous)], previous, color=request.colors[0], label=request.labels[0], linestyle='--', marker='o')
-    ax.plot(request.x[:len(current)], current, color=request.colors[1], label=request.labels[1], marker='o')
 
+    fig, ax = plt.subplots()
+    fig.subplots_adjust(top=0.88)  # Tạo khoảng trống phía trên cho suptitle
+
+    # Đặt màu tùy theo sentiment
+    color = ["#61ff00", "#d9f9c5"] if "Positive" in request.title else ["#FF5733", "#f9b6aa"]
+
+    # Vẽ dữ liệu
+    ax.plot(request.x[:len(previous)], previous, color=color[1], label=request.labels[0], linestyle='--', marker='o')
+    ax.plot(request.x[:len(current)], current, color=color[0], label=request.labels[1], marker='o')
+
+    # Tính toán tổng và phần trăm thay đổi
     total_current = sum(current)
     total_previous = sum(previous)
     percentage_change = ((total_current - total_previous) / total_previous) * 100 if total_previous > 0 else 0
 
-
+    # Biểu tượng và mũi tên
     emoji = "😞" if "Negative" in request.title else "😃"
     arrow = "⬆️" if total_current > total_previous else "⬇️"
 
-    fig.suptitle(request.title, x=0.01, ha='left', fontsize=14, weight='bold')
-    fig.text(0.1, 0.91, f"{total_current} {emoji} {arrow}{abs(percentage_change):.2f}% (compare to last period)", ha='left', va='top', fontsize=12)
+    # Tiêu đề chính (suptitle)
+    fig.suptitle(request.title, x=0.01, y=1.02, ha='left', fontsize=14, weight='bold')
+
+    # Phần số + emoji to
+    t1 = fig.text(
+        0.1, 0.93,
+        f"{emoji} {total_current}",
+        ha='left', va='top',
+        fontsize=14, fontweight='bold',
+        color=color[0]
+    )
+
+    # Tính vị trí tiếp theo để vẽ phần mô tả bên cạnh
+    renderer = fig.canvas.get_renderer()
+    bbox = t1.get_window_extent(renderer=renderer)
+    inv = fig.transFigure.inverted()
+    new_pos = inv.transform((bbox.x1, bbox.y1))[0] + 0.01  # thêm một khoảng đệm
+
+    # Mô tả nhỏ hơn bên phải
+    fig.text(
+        new_pos, 0.92,
+        f"{arrow} {abs(percentage_change):.2f}% (compare to last period)",
+        ha='left', va='top',
+        fontsize=10, fontweight='bold',
+        color=color[0]
+    )
+
+    # Cấu hình biểu đồ
     ax.set_xlabel(request.xlabel)
     ax.set_ylabel(request.ylabel)
     ax.tick_params(axis='y', length=0)
     ax.legend(loc='upper left', bbox_to_anchor=(1, 1), frameon=False)
+
     for spine in ['top', 'right', 'left', 'bottom']:
         ax.spines[spine].set_visible(False)
-    
+
+    # Kết xuất hình ảnh
     buf = BytesIO()
-    plt.tight_layout()
-    plt.savefig(buf, format="png")
+    plt.savefig(buf, format="png", bbox_inches="tight")
     buf.seek(0)
     plt.close(fig)
 
@@ -354,7 +451,7 @@ async def generate_top_sources(request: TableRequest):
     num_tables = len(all_data)
     rows = math.ceil(num_tables / cols)
 
-    fig, axes = plt.subplots(rows, cols, figsize=(cols * 7, rows * 5))
+    fig, axes = plt.subplots(rows, cols, figsize=(cols * 6, rows * 6))
 
     if rows == 1:
         axes = [axes]
@@ -390,24 +487,29 @@ async def generate_top_sources(request: TableRequest):
         table.set_fontsize(10)
 
         for (row, col), cell in table.get_celld().items():
+            cell.set_linewidth(0)
+            cell.set_height(0.1) 
             if column_labels:
                 if row == 0:
                     cell.set_text_props(weight='bold')
+                    cell.set_facecolor('#cdf8f5')
             if col == 0:
-                cell.set_text_props(ha='left')
+                cell.set_text_props(ha='left', weight='bold', color='#666666')
+                cell.set_facecolor('#c2f9f5')
                 cell.set_width(0.7)
-                cell.set_height(0.1)
             elif col == 1:
-                cell.set_text_props(ha='right')
-                cell.set_width(0.2)
-                cell.set_height(0.1)
+                cell.set_text_props(ha='right', weight='bold', color='#666666')
+                cell.set_facecolor('#dffcfa')
+                cell.set_width(0.25)
 
         top = get_table_position(fig, ax, table)
+        # color light blue
+        net_sentiment_score_color = '#61ff00' if net_sentiment_score >= 0 else '#f53105'
         ax.text(0.5, top + 0.40, title, ha='center', va='bottom', fontsize=14, fontweight='bold', transform=ax.transAxes)
-        ax.text(0.05, top + 0.35, "Total Mention", ha='left', fontsize=12, transform=ax.transAxes)
-        ax.text(0.05, top + 0.25, f"{total_mention}", ha='left', fontsize=12, fontweight='bold', transform=ax.transAxes)
-        ax.text(0.05, top + 0.15, "Net Sentiment Score", ha='left', fontsize=12, transform=ax.transAxes)
-        ax.text(0.05, top + 0.05, f"{net_sentiment_score}%", ha='left', fontsize=12, fontweight='bold', transform=ax.transAxes)
+        ax.text(0.05, top + 0.35, "Total Mention", ha='left', fontsize=12, transform=ax.transAxes, fontweight='bold', color='#666666')
+        ax.text(0.05, top + 0.25, f"{total_mention}", ha='left', fontsize=12, fontweight='bold', transform=ax.transAxes, color=net_sentiment_score_color)
+        ax.text(0.05, top + 0.15, "Net Sentiment Score", ha='left', fontsize=12, transform=ax.transAxes, fontweight='bold', color='#666666')
+        ax.text(0.05, top + 0.05, f"{net_sentiment_score}%", ha='left', fontsize=12, fontweight='bold', transform=ax.transAxes, color=net_sentiment_score_color)
         ax.axis("off")
     
     plt.subplots_adjust(hspace=0.8)
@@ -435,23 +537,22 @@ async def generate_overview(request: TableRequest):
         cellLoc='center',
         loc='center'
     )
-    table.auto_set_font_size(False)
-    table.set_fontsize(10)
-    col_widths = get_normalized_col_widths(table)
-    for (row, col), cell in table.get_celld().items():
-        if col in col_widths:
-            cell.set_width(col_widths[col])
-    for (row, col), cell in table.get_celld().items():
-        if column_labels:
-            if row == 0: 
-                cell.set_text_props(weight='bold')
+    col_widths = get_max_text_widths(rows_data, column_labels, font_size=10)
 
-    renderer = fig.canvas.get_renderer()
-    bbox = table.get_window_extent(renderer=renderer)
-    inv = ax.transData.inverted()
-    bbox_data = inv.transform(bbox)
-    top_y = bbox_data[:,1].max()
-    ax.text(0.07, top_y + 0.1, title, ha='center', va='bottom', fontsize=14, fontweight='bold', transform=ax.transAxes)
+    for (row, col), cell in table.get_celld().items():
+        cell.set_linewidth(0)
+        cell.set_width(col_widths[col])
+        cell.set_height(0.2) 
+        if column_labels and row == 0:
+            # set facecolor is light blue
+            cell.set_facecolor('#05c2f5')
+            cell.set_text_props(weight='bold', color='#f4f6f7')        
+        else:
+            cell.set_text_props(weight='bold', color='#666666')
+            
+    top = get_table_position(fig, ax, table)
+    if title:
+        ax.text(0.01, top + 0.1, title, ha='left', va='bottom', fontsize=14, fontweight='bold', transform=ax.transAxes)
     ax.axis("off")
         
     plt.subplots_adjust(hspace=0.8)
@@ -465,34 +566,43 @@ async def generate_overview(request: TableRequest):
 async def generate_brand_attribute(request: TableRequest):
     if not request.data:
         return StreamingResponse(BytesIO(), media_type="image/png")
-    data = request.data
-    fig, ax = plt.subplots(figsize=(8, 3))
 
+    data = request.data
     title = data.title
     rows_data = data.rows
+    fig, ax = plt.subplots(figsize=(len(data.rows)*0.5 + 2, len(data.rows) * 0.2 + 2))
     column_labels = data.column_labels if data.column_labels else None
 
     table = ax.table(
         cellText=rows_data,
         colLabels=column_labels,
-        cellLoc='center',
+        cellLoc='center',  
         loc='center'
     )
+
     table.auto_set_font_size(False)
     table.set_fontsize(10)
-    col_widths = get_normalized_col_widths(table)
+
+    col_widths = get_max_text_widths(rows_data, column_labels, font_size=10)
+
     for (row, col), cell in table.get_celld().items():
-        if col in col_widths:
-            cell.set_width(col_widths[col])
-
-    if column_labels:
-        for (row, col), cell in table.get_celld().items():
-            if row == 0:
-                cell.set_text_props(weight='bold')
-
+        cell.set_linewidth(0)
+        cell.set_width(col_widths[col])
+        cell.set_height(0.1) 
+        if column_labels and row == 0:
+            cell.set_facecolor('#f0f0f0')
+            cell.set_text_props(weight='bold', color='black')  
+        elif col == 0:
+            cell.set_text_props(ha='left', weight='bold', color='#666666')           
+        elif col == 1:
+            cell.set_text_props(ha='right', weight='bold', color='#666666')       
+        else:
+            cell.set_text_props( color='#666666')
+            
     top = get_table_position(fig, ax, table)
     ax.text(0.01, top + 0.1, title, ha='left', va='bottom', fontsize=14, fontweight='bold', transform=ax.transAxes)
     ax.axis("off")
+
     plt.tight_layout()
 
     buf = BytesIO()
