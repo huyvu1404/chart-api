@@ -19,22 +19,6 @@ def get_table_position(fig, ax, table):
     top = bbox_data[:, 1].max()
     return top
 
-def get_normalized_col_widths(table):
-    font_prop = FontProperties(size=10)
-    col_widths = {}
-    for (row, col), cell in table.get_celld().items():
-        txt = str(cell.get_text().get_text())
-        est_width = font_prop.get_size_in_points() * len(txt) * 0.6  
-        if col not in col_widths or est_width > col_widths[col]:
-            col_widths[col] = est_width
-
-    total_width = sum(col_widths.values())
-    for col in col_widths:
-        col_widths[col] /= total_width
-
-    return col_widths
-
-
 def get_max_text_widths(rows_data, column_labels=None, font_size=10):
 
     num_cols = len(column_labels) if column_labels else len(rows_data[0])
@@ -68,12 +52,8 @@ async def generate_bar_chart(request: BarChartRequest):
         for i in range(len(y)):
             if isinstance(y[i], list):
                 y[i] = [0] + y[i] + [0]
-        len_x = len(x)  # cập nhật lại độ dài sau khi thêm
-    else:
-        # Nếu không thì giữ nguyên
-        y = y
-
-    # Tạo các trục và chuẩn bị dữ liệu
+        len_x = len(x)  
+  
     x_pos = np.arange(len_x)
     bottom = np.zeros(len_x)
 
@@ -81,7 +61,6 @@ async def generate_bar_chart(request: BarChartRequest):
     bar_width = 0.2
     max_value = 0
 
-    # Vẽ stacked bar nếu y là list of lists
     if isinstance(y[0], list):
         for i, y_i in enumerate(y):
             if isinstance(y_i, list):
@@ -92,11 +71,9 @@ async def generate_bar_chart(request: BarChartRequest):
     else:
         ax.bar(x_pos, y, color=request.colors)
 
-    # Gắn nhãn x
     ax.set_xticks(x_pos)
     ax.set_xticklabels(x)
 
-    # Thiết lập trục y
     ylim = int(np.ceil(max_value / 10) * 10)
     step = int(np.ceil(ylim / 50) * 10)
     ax.set_ylim(-step, ylim)
@@ -104,7 +81,6 @@ async def generate_bar_chart(request: BarChartRequest):
     ax.set_yticks(grid_yticks)
     ax.set_yticklabels([str(tick) if tick >= 0 else None for tick in grid_yticks])
 
-    # Tùy chỉnh giao diện
     ax.tick_params(axis='y', length=0)
     ax.tick_params(axis='x', length=0)
     fig.suptitle(request.title, x=0.01, y=0.98, ha='left', fontsize=16, weight='bold')
@@ -114,7 +90,6 @@ async def generate_bar_chart(request: BarChartRequest):
     for spine in ['top', 'right', 'left', 'bottom']:
         ax.spines[spine].set_visible(False)
 
-    # Xuất ảnh
     buf = BytesIO()
     plt.tight_layout()
     plt.savefig(buf, format="png")
@@ -279,28 +254,22 @@ async def generate_trend_chart(request: LineChartRequest):
     previous = request.y[1] if len(request.y) > 1 else []
 
     fig, ax = plt.subplots()
-    fig.subplots_adjust(top=0.88)  # Tạo khoảng trống phía trên cho suptitle
+    fig.subplots_adjust(top=0.88)  
 
-    # Đặt màu tùy theo sentiment
     color = ["#61ff00", "#d9f9c5"] if "Positive" in request.title else ["#FF5733", "#f9b6aa"]
 
-    # Vẽ dữ liệu
     ax.plot(request.x[:len(previous)], previous, color=color[1], label=request.labels[0], linestyle='--', marker='o')
     ax.plot(request.x[:len(current)], current, color=color[0], label=request.labels[1], marker='o')
 
-    # Tính toán tổng và phần trăm thay đổi
     total_current = sum(current)
     total_previous = sum(previous)
     percentage_change = ((total_current - total_previous) / total_previous) * 100 if total_previous > 0 else 0
 
-    # Biểu tượng và mũi tên
     emoji = "😞" if "Negative" in request.title else "😃"
     arrow = "⬆️" if total_current > total_previous else "⬇️"
 
-    # Tiêu đề chính (suptitle)
     fig.suptitle(request.title, x=0.01, y=1.02, ha='left', fontsize=14, weight='bold')
 
-    # Phần số + emoji to
     t1 = fig.text(
         0.1, 0.93,
         f"{emoji} {total_current}",
@@ -309,13 +278,11 @@ async def generate_trend_chart(request: LineChartRequest):
         color=color[0]
     )
 
-    # Tính vị trí tiếp theo để vẽ phần mô tả bên cạnh
     renderer = fig.canvas.get_renderer()
     bbox = t1.get_window_extent(renderer=renderer)
     inv = fig.transFigure.inverted()
-    new_pos = inv.transform((bbox.x1, bbox.y1))[0] + 0.01  # thêm một khoảng đệm
+    new_pos = inv.transform((bbox.x1, bbox.y1))[0] + 0.01 
 
-    # Mô tả nhỏ hơn bên phải
     fig.text(
         new_pos, 0.92,
         f"{arrow} {abs(percentage_change):.2f}% (compare to last period)",
@@ -324,7 +291,6 @@ async def generate_trend_chart(request: LineChartRequest):
         color=color[0]
     )
 
-    # Cấu hình biểu đồ
     ax.set_xlabel(request.xlabel)
     ax.set_ylabel(request.ylabel)
     ax.tick_params(axis='y', length=0)
@@ -333,7 +299,6 @@ async def generate_trend_chart(request: LineChartRequest):
     for spine in ['top', 'right', 'left', 'bottom']:
         ax.spines[spine].set_visible(False)
 
-    # Kết xuất hình ảnh
     buf = BytesIO()
     plt.savefig(buf, format="png", bbox_inches="tight")
     buf.seek(0)
@@ -544,7 +509,6 @@ async def generate_overview(request: TableRequest):
         cell.set_width(col_widths[col])
         cell.set_height(0.2) 
         if column_labels and row == 0:
-            # set facecolor is light blue
             cell.set_facecolor('#05c2f5')
             cell.set_text_props(weight='bold', color='#f4f6f7')        
         else:
