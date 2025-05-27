@@ -29,7 +29,7 @@ def get_max_text_widths(rows_data, column_labels=None, font_size=10):
     for row in full_data:
         for col, val in enumerate(row):
             text = str(val)
-            width = len(text) + 10  
+            width = len(text) + font_size  
             if width > col_max_widths[col]:
                 col_max_widths[col] = width
 
@@ -431,12 +431,10 @@ async def generate_top_sources(request: TableRequest):
 
     if rows == 1:
         axes = [axes]
-    if cols == 1:
-        axes = [[ax] for ax in axes]
     axes_flat = [ax for row in axes for ax in row]
 
-    for j in range(len(all_data), len(axes_flat)):
-        axes_flat[j].set_visible(False)
+    for ax in axes_flat[len(all_data):]:
+        axes.set_visible(False)
 
     for i, data in enumerate(all_data):
         ax = axes_flat[i]
@@ -479,7 +477,7 @@ async def generate_top_sources(request: TableRequest):
                 cell.set_width(0.25)
 
         top = get_table_position(fig, ax, table)
-        # color light blue
+
         net_sentiment_score_color = '#61ff00' if net_sentiment_score >= 0 else '#f53105'
         ax.text(0.5, top + 0.40, title, ha='center', va='bottom', fontsize=14, fontweight='bold', transform=ax.transAxes)
         ax.text(0.05, top + 0.35, "Total Mention", ha='left', fontsize=12, transform=ax.transAxes, fontweight='bold', color='#666666')
@@ -490,7 +488,7 @@ async def generate_top_sources(request: TableRequest):
     
     plt.subplots_adjust(hspace=0.8)
     buf = BytesIO()
-    plt.savefig(buf, format="png", bbox_inches='tight', pad_inches=0.1)
+    plt.savefig(buf, format="png", bbox_inches='tight')
     buf.seek(0)
     plt.close()
     return StreamingResponse(buf, media_type="image/png")
@@ -532,7 +530,7 @@ async def generate_overview(request: TableRequest):
         
     plt.subplots_adjust(hspace=0.8)
     buf = BytesIO()
-    plt.savefig(buf, format="png", bbox_inches='tight', pad_inches=0.1)
+    plt.savefig(buf, format="png", bbox_inches='tight')
     buf.seek(0)
     plt.close()
     return StreamingResponse(buf, media_type="image/png")
@@ -545,7 +543,8 @@ async def generate_brand_attribute(request: TableRequest):
     data = request.data
     title = data.title
     rows_data = data.rows
-    fig, ax = plt.subplots(figsize=(len(data.rows)*0.5 + 2, len(data.rows) * 0.2 + 2))
+
+    fig, ax = plt.subplots(figsize=(15, 5))
     column_labels = data.column_labels if data.column_labels else None
 
     table = ax.table(
@@ -559,7 +558,6 @@ async def generate_brand_attribute(request: TableRequest):
     table.set_fontsize(10)
 
     col_widths = get_max_text_widths(rows_data, column_labels, font_size=10)
-
     for (row, col), cell in table.get_celld().items():
         cell.set_linewidth(0)
         cell.set_width(col_widths[col])
@@ -578,10 +576,8 @@ async def generate_brand_attribute(request: TableRequest):
     ax.text(0.01, top + 0.1, title, ha='left', va='bottom', fontsize=14, fontweight='bold', transform=ax.transAxes)
     ax.axis("off")
 
-    plt.tight_layout()
-
     buf = BytesIO()
-    plt.savefig(buf, format="png", bbox_inches='tight', pad_inches=0.1)
+    plt.savefig(buf, format="png", bbox_inches='tight')
     buf.seek(0)
     plt.close(fig)
     return StreamingResponse(buf, media_type="image/png")
