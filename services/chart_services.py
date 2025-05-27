@@ -70,6 +70,7 @@ async def generate_bar_chart(request: BarChartRequest):
                 ax.bar(x_pos, y_i, width=bar_width, bottom=bottom, color=request.colors[i], label=request.labels[i])
                 bottom += y_i
     else:
+        max_value = max(y)
         ax.bar(x_pos, y, color=request.colors)
 
     ax.set_xticks(x_pos)
@@ -77,7 +78,10 @@ async def generate_bar_chart(request: BarChartRequest):
 
     ylim = int(np.ceil(max_value / 10) * 10)
     step = int(np.ceil(ylim / 50) * 10)
+    if step == 0 or step == 1:
+        step = 1
     ax.set_ylim(-step, ylim)
+
     grid_yticks = np.arange(-step, ylim + step, step)
     ax.set_yticks(grid_yticks)
     ax.set_yticklabels([str(tick) if tick >= 0 else None for tick in grid_yticks])
@@ -112,6 +116,8 @@ async def generate_top_social_posts(request: BarChartRequest):
     bar_width = 0.25  
     ylim = int(np.ceil(max(total_engagements) / 10) * 10)
     step = int(ylim / 2)
+    if step == 0 or step == 1:
+        step = 1
     ax.bar(x, total_engagements, width=bar_width, color=colors[0], label='Total Engagements')
     scale = 100 / step
     scaled_sentiment_score = [-s / scale for s in sentiment_score]
