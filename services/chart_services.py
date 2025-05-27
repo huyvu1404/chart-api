@@ -1,5 +1,6 @@
 import random
 import math
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
@@ -199,12 +200,16 @@ async def generate_wordcloud(request: WordCloudRequest):
         return StreamingResponse(BytesIO(), media_type="image/png")
     word_freq = {item["key"]: item["doc_count"] for item in request.data}
     color = 'Greens_r' if 'Positive' in request.title else 'Reds_r'
+
+
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    font_path = os.path.join(BASE_DIR, 'fonts', 'DejaVuSans.ttf')
     wordcloud = WordCloud(
         width=800,
         height=400,
         background_color='white',
         colormap=color,
-        font_path='/fonts/DejaVuSans.ttf' 
+        font_path=font_path 
     ).generate_from_frequencies(word_freq)
 
     plt.figure(figsize=(10, 5))
@@ -258,7 +263,7 @@ async def generate_trend_chart(request: LineChartRequest):
 
     color = ["#61ff00", "#d9f9c5"] if "Positive" in request.title else ["#FF5733", "#f9b6aa"]
 
-    ax.plot(request.x[:len(previous)], previous, color=color[1], label=request.labels[0], linestyle='--', marker='o')
+    ax.plot(request.x[:len(current)], previous[:len(current)], color=color[1], label=request.labels[0], linestyle='--', marker='o')
     ax.plot(request.x[:len(current)], current, color=color[0], label=request.labels[1], marker='o')
 
     total_current = sum(current)
