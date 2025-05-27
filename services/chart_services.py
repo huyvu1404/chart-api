@@ -45,19 +45,13 @@ async def generate_bar_chart(request: BarChartRequest):
 
     x = request.x
     y = request.y
-    len_x = len(x)
 
     # add padding
     x = [""] + x + [""]
-    for i in range(len(y)):
-        if isinstance(y[i], list):
-            y[i] = [0] + y[i] + [0]
-    len_x = len(x)  
-  
-    x_pos = np.arange(len_x)
-    bottom = np.zeros(len_x)
+    x_pos = np.arange(len(x))
+    bottom = np.zeros(len(x))
 
-    fig, ax = plt.subplots(figsize=(len_x + 3, 5))
+    fig, ax = plt.subplots(figsize=(len(x) + 3, 5))
     bar_width = 0.2
     max_value = 0
 
@@ -65,12 +59,14 @@ async def generate_bar_chart(request: BarChartRequest):
         for i, y_i in enumerate(y):
             if isinstance(y_i, list):
                 max_y = max(y_i)
+                y_i = [0] + y_i + [0]
                 max_value = max(max_value, max_y)
                 ax.bar(x_pos, y_i, width=bar_width, bottom=bottom, color=request.colors[i], label=request.labels[i])
                 bottom += y_i
     else:
         max_value = max(y)
-        ax.bar(x_pos, y, color=request.colors)
+        y = [0] + y + [0]
+        ax.bar(x_pos, y, width=bar_width, color=request.colors)
 
     ax.set_xticks(x_pos)
     ax.set_xticklabels(x)
