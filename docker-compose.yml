@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chart-api
+    ports:
+      - "8111:8000"
+    environment:
+      PYTHONUNBUFFERED: 1
+      TZ: Asia/Ho_Chi_Minh
+    volumes:
+      - .:/code
+    restart: alway
