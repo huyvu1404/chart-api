@@ -433,7 +433,7 @@ async def generate_top_sources(request: TableRequest):
     axes_flat = [ax for row in axes for ax in row]
 
     for ax in axes_flat[len(all_data):]:
-        axes.set_visible(False)
+        ax.set_visible(False)
 
     for i, data in enumerate(all_data):
         ax = axes_flat[i]
