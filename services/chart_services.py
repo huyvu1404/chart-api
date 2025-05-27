@@ -47,13 +47,12 @@ async def generate_bar_chart(request: BarChartRequest):
     y = request.y
     len_x = len(x)
 
-    # Nếu chỉ có 1 giá trị x, thêm đệm trái và phải
-    if len_x == 1:
-        x = [""] + x + [""]
-        for i in range(len(y)):
-            if isinstance(y[i], list):
-                y[i] = [0] + y[i] + [0]
-        len_x = len(x)  
+    # add padding
+    x = [""] + x + [""]
+    for i in range(len(y)):
+        if isinstance(y[i], list):
+            y[i] = [0] + y[i] + [0]
+    len_x = len(x)  
   
     x_pos = np.arange(len_x)
     bottom = np.zeros(len_x)
