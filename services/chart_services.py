@@ -136,7 +136,7 @@ async def generate_top_social_posts(request: BarChartRequest):
     bar_width = 0.25  
     ylim = int(np.ceil(max(total_engagements) / 10) * 10)
     step = int(ylim / 2)
-    
+
     if step == 0 or step == 1:
         step = 1
 
@@ -146,23 +146,24 @@ async def generate_top_social_posts(request: BarChartRequest):
     bar_heights = []
     bar_bottoms = []
     sentiment_score_colors = []
+    negative_height = - 25 / scale_factor
     for s in sentiment_score:
         if s > 0:
             bar_heights.append(-s / scale_factor)
             bar_bottoms.append(0)
             sentiment_score_colors.append(colors[1])  
         else:
-            bar_heights.append(-5)    
-            bar_bottoms.append(-1) 
+            bar_heights.append(negative_height)    
+            bar_bottoms.append(negative_height / 6) 
             sentiment_score_colors.append("red")
     bars2 = ax.bar(
-    x,
-    bar_heights,
-    width=bar_width,
-    bottom=bar_bottoms,
-    color=sentiment_score_colors,
-    label='Sentiment Score',
-    )
+                    x,
+                    bar_heights,
+                    width=bar_width,
+                    bottom=bar_bottoms,
+                    color=sentiment_score_colors,
+                    label='Sentiment Score',
+                    )
     
     xlim = ax.get_xlim()
     total_width = xlim[1] - xlim[0]
@@ -172,9 +173,9 @@ async def generate_top_social_posts(request: BarChartRequest):
         scaling_factor = bar.get_width() / total_width
         dynamic_fontsize = scaling_factor * ax.figure.get_size_inches()[0] * 15
         if score > 0:
-            ax.text(bar.get_x() + bar.get_width() / 2, height - 2, f'{score}%', ha='center', va='top', color='black', weight='bold', fontsize=dynamic_fontsize)
+            ax.text(bar.get_x() + bar.get_width() / 2, height + negative_height / 3 , f'{score}%', ha='center', va='top', color='black', fontsize=dynamic_fontsize)
         elif score <= 0:
-            ax.text(bar.get_x() + bar.get_width() / 2, height + 2.5, f'{score}%', ha='center', va='top', color='white', weight='bold', fontsize=dynamic_fontsize)
+            ax.text(bar.get_x() + bar.get_width() / 2, height / 2 , f'{score}%', ha='center', va='top', color='white', fontsize=dynamic_fontsize)
 
     ax.set_ylim(-ylim, ylim)
     grid_yticks = np.arange(-step, ylim + step, step)
