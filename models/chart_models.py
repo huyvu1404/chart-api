@@ -20,7 +20,7 @@ class AxisLabels(BaseModel):
 
 class BarChartRequest(AxisLabels):
     x: List[str]
-    y: Union[List[int], List[List[int]]]
+    y: Union[List[float], List[List[float]]]
     labels : Optional[List[str]] = None
     colors: Optional[Union[str, List[str]]] = Field(default="blue")
 
@@ -38,13 +38,13 @@ class WordCloudRequest(BaseModel):
     color: Optional[str] = Field(default="blue") 
 
 class SanKeyChartRequest(BaseModel):
-    title: str
+    title: Optional[str] = None
     data: dict
 class TableData(BaseModel):
     title: Optional[str] = None
-    column_labels: Optional[List[str]] = None
+    headers: Optional[List[str]] = None
     total: Optional[int] = None
-    net_sentiment_score: Optional[float] = None
+    scores: Optional[float] = None
     rows: List[List[Union[str, int]]]
 
 class TableRequest(BaseModel):
