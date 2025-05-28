@@ -20,7 +20,6 @@ async def generate_bar_chart(request: BarChartRequest):
     x = request.x
     y = request.y
 
-    # add padding
     x = [""] + x + [""]
     x_pos = np.arange(len(x))
     bottom = np.zeros(len(x))
@@ -78,7 +77,6 @@ async def generate_conversation_breakdown(request: BarChartRequest):
     if not isinstance(request.y[0], list):
         return StreamingResponse(BytesIO(), media_type="image/png")
     
-    # add padding
     x = [""] + request.x + [""]
     x_pos = np.arange(len(x))
     bottom = np.zeros(len(x))
@@ -129,7 +127,10 @@ async def generate_top_social_posts(request: BarChartRequest):
     if not request.x or not request.y:
         return StreamingResponse(BytesIO(), media_type="image/png")
     
-    sites_name = [""] + request.x + [""]
+    num_bars = len(request.x)
+    sites_name = request.x
+    wrapped_labels = ['\n'.join(textwrap.wrap(label, width=18)) for label in sites_name]
+    sites_name = [" "] + wrapped_labels + [" "]
     interactions, sentiment_score = request.y
     interactions = [0] + interactions + [0]
     sentiment_score = [0] + sentiment_score + [0]
@@ -145,7 +146,7 @@ async def generate_top_social_posts(request: BarChartRequest):
     ylim = max(10, int(np.ceil(max(interactions) / 10) * 10))
     step = max(1, int(ylim / 2))
     scale_factor = 100 / step
-    negative_height = -step / 5 if len(sentiment_score) - 2 > 2 else max(-step / 3, -step / (len(sentiment_score) - 2))
+    negative_height = step / 5 if num_bars > 2 else min(step / 3, step / num_bars)
 
     ax.bar(x, interactions, width=bar_width, color=colors[0], label=labels[0])
 
@@ -170,8 +171,8 @@ async def generate_top_social_posts(request: BarChartRequest):
                 bar_widths.append(0.25)
             else:
                 bar_widths.append(0.3)
-            bar_heights.append(negative_height)
-            bar_bottoms.append(negative_height / 4)
+            bar_heights.append(-negative_height)
+            bar_bottoms.append(-negative_height / 4)
             sentiment_score_colors.append("red")
         
 
@@ -185,7 +186,7 @@ async def generate_top_social_posts(request: BarChartRequest):
             height = bar_heights[i]
             fontsize = 60 / len(sites_name)
             if score > 0:
-                ax.text(bar.get_x() + bar.get_width() / 2, height + negative_height / 3,
+                ax.text(bar.get_x() + bar.get_width() / 2, height - negative_height / 3,
                         f'{score}%', ha='center', va='top', color='black', weight='bold', fontsize=fontsize)
             else:
                 ax.text(bar.get_x() + bar.get_width() / 2, height * 5 / 8,
@@ -194,11 +195,9 @@ async def generate_top_social_posts(request: BarChartRequest):
     ax.set_ylim(-ylim * 0.8, ylim)
     ax.tick_params(axis='y', length=0)
     ax.tick_params(axis='x', length=0)
-
-    wrapped_labels = ['\n'.join(textwrap.wrap(label, width=18)) for label in sites_name]
     ax.set_xticks(x)
     ax.set_yticks(np.arange(-step, ylim + step, step))
-    ax.set_xticklabels(wrapped_labels)
+    ax.set_xticklabels(sites_name)
     ax.set_yticklabels([str(tick) if tick >= 0 else None for tick in np.arange(-step, ylim + step, step)]) 
 
     ax.grid(True, which='major', axis='y', linestyle='--', linewidth=0.5, alpha=0.7)
