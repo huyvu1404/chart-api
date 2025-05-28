@@ -127,20 +127,20 @@ async def generate_top_social_posts(request: BarChartRequest):
     if not request.x or not request.y:
         return StreamingResponse(BytesIO(), media_type="image/png")
     
-    categories = request.x
-    total_engagements, sentiment_score = request.y
+    sites_name = request.x
+    interactions, sentiment_score = request.y
     colors = request.colors if request.colors else ["#FFA500", "#00CED1"]
 
     fig, ax = plt.subplots(figsize=(14, 8)) 
-    x = np.arange(len(categories))
+    x = np.arange(len(sites_name))
     bar_width = 0.25  
-    ylim = int(np.ceil(max(total_engagements) / 10) * 10)
+    ylim = int(np.ceil(max(interactions) / 10) * 10)
     step = int(ylim / 2)
 
     if step == 0 or step == 1:
         step = 1
 
-    ax.bar(x, total_engagements, width=bar_width, color=colors[0], label='Total Engagements')
+    ax.bar(x, interactions, width=bar_width, color=colors[0], label='Total Interactions')
     scale_factor = 100 / step
     
     bar_heights = []
@@ -184,7 +184,7 @@ async def generate_top_social_posts(request: BarChartRequest):
     ax.tick_params(axis='y', length=0)
     ax.tick_params(axis='x', length=0)
     ax.set_xticks(x)
-    ax.set_xticklabels(categories, fontsize=8)
+    ax.set_xticklabels(sites_name, fontsize=8)
     ax.grid(True, which='major', axis='y', linestyle='--', linewidth=0.5, alpha=0.7)
     
     for spine in ['top', 'right', 'left', 'bottom']:
