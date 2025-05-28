@@ -1,8 +1,10 @@
 import random
 import math
 import os
+import textwrap
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 import matplotlib.colors as mcolors
 import plotly.graph_objects as go
 from io import BytesIO
@@ -127,77 +129,94 @@ async def generate_top_social_posts(request: BarChartRequest):
     if not request.x or not request.y:
         return StreamingResponse(BytesIO(), media_type="image/png")
     
-    sites_name = request.x
+    sites_name = [""] + request.x + [""]
     interactions, sentiment_score = request.y
-    colors = request.colors if request.colors else ["#FFA500", "#00CED1"]
-
-    fig, ax = plt.subplots(figsize=(14, 8)) 
-    x = np.arange(len(sites_name))
-    bar_width = 0.25  
-    ylim = int(np.ceil(max(interactions) / 10) * 10)
-    step = int(ylim / 2)
-
-    if step == 0 or step == 1:
-        step = 1
-
-    ax.bar(x, interactions, width=bar_width, color=colors[0], label='Total Interactions')
-    scale_factor = 100 / step
+    interactions = [0] + interactions + [0]
+    sentiment_score = [0] + sentiment_score + [0]
+    colors = request.colors or ["#FFA500", "#00CED1"]
+    labels = request.labels or [
+        "Tổng tương tác = Tổng yêu thích + Tổng chia sẻ + Tổng bình luận",
+        "Chỉ số cảm xúc = (Tích cực - Tiêu cực) / (Tích cực + Tiêu cực)*100%"
+    ]
     
+    fig, ax = plt.subplots(figsize=(14, 8))
+    x = np.arange(len(sites_name))
+    bar_width = 0.25
+    ylim = max(10, int(np.ceil(max(interactions) / 10) * 10))
+    step = max(1, int(ylim / 2))
+    scale_factor = 100 / step
+    negative_height = -step / 5 if len(sentiment_score) - 2 > 2 else max(-step / 3, -step / (len(sentiment_score) - 2))
+
+    ax.bar(x, interactions, width=bar_width, color=colors[0], label=labels[0])
+
     bar_heights = []
+    bar_widths = []
     bar_bottoms = []
     sentiment_score_colors = []
-    negative_height = - 25 / scale_factor
-    for s in sentiment_score:
-        if s > 0:
+
+    for i, s in enumerate(sentiment_score):
+        if i == 0 or i == len(sentiment_score) - 1:
+            bar_heights.append(0)
+            bar_bottoms.append(0)
+            bar_widths.append(0.25)
+            sentiment_score_colors.append("white")
+        elif s > 0:
             bar_heights.append(-s / scale_factor)
             bar_bottoms.append(0)
-            sentiment_score_colors.append(colors[1])  
+            bar_widths.append(0.25)
+            sentiment_score_colors.append(colors[1])
         else:
-            bar_heights.append(negative_height)    
-            bar_bottoms.append(negative_height / 6) 
+            if s == 0:
+                bar_widths.append(0.25)
+            else:
+                bar_widths.append(0.3)
+            bar_heights.append(negative_height)
+            bar_bottoms.append(negative_height / 4)
             sentiment_score_colors.append("red")
-    bars2 = ax.bar(
-                    x,
-                    bar_heights,
-                    width=bar_width,
-                    bottom=bar_bottoms,
-                    color=sentiment_score_colors,
-                    label='Sentiment Score',
-                    )
-    
-    xlim = ax.get_xlim()
-    total_width = xlim[1] - xlim[0]
-    for i, bar in enumerate(bars2):
-        height = bar_heights[i]
-        score = sentiment_score[i]
-        scaling_factor = bar.get_width() / total_width
-        dynamic_fontsize = scaling_factor * ax.figure.get_size_inches()[0] * 15
-        if score > 0:
-            ax.text(bar.get_x() + bar.get_width() / 2, height + negative_height / 3 , f'{score}%', ha='center', va='top', color='black', fontsize=dynamic_fontsize)
-        elif score <= 0:
-            ax.text(bar.get_x() + bar.get_width() / 2, height / 2 , f'{score}%', ha='center', va='top', color='white', fontsize=dynamic_fontsize)
+        
 
-    ax.set_ylim(-ylim, ylim)
-    grid_yticks = np.arange(-step, ylim + step, step)
-    ax.set_yticks(grid_yticks)
-    ax.set_yticklabels([str(tick) if tick >= 0 else None for tick in grid_yticks])
+    bars2 = ax.bar(
+        x, bar_heights, width=bar_widths, bottom=bar_bottoms,
+        color=sentiment_score_colors, label=labels[1]
+    )
+
+    for i, (bar, score) in enumerate(zip(bars2, sentiment_score)):
+        if 0 < i < len(sentiment_score) - 1:
+            height = bar_heights[i]
+            fontsize = 60 / len(sites_name)
+            if score > 0:
+                ax.text(bar.get_x() + bar.get_width() / 2, height + negative_height / 3,
+                        f'{score}%', ha='center', va='top', color='black', weight='bold', fontsize=fontsize)
+            else:
+                ax.text(bar.get_x() + bar.get_width() / 2, height * 5 / 8,
+                        f'{score}%', ha='center', va='top', color='white', weight='bold', fontsize=fontsize)
+
+    ax.set_ylim(-ylim * 0.8, ylim)
     ax.tick_params(axis='y', length=0)
     ax.tick_params(axis='x', length=0)
+
+    wrapped_labels = ['\n'.join(textwrap.wrap(label, width=18)) for label in sites_name]
     ax.set_xticks(x)
-    ax.set_xticklabels(sites_name, fontsize=8)
+    ax.set_yticks(np.arange(-step, ylim + step, step))
+    ax.set_xticklabels(wrapped_labels)
+    ax.set_yticklabels([str(tick) if tick >= 0 else None for tick in np.arange(-step, ylim + step, step)]) 
+
     ax.grid(True, which='major', axis='y', linestyle='--', linewidth=0.5, alpha=0.7)
-    
     for spine in ['top', 'right', 'left', 'bottom']:
         ax.spines[spine].set_visible(False)
-    
-    ax.legend()
+
+    legend_patches = [
+        Patch(color=colors[0], label=labels[0]),
+        Patch(color=colors[1], label=labels[1])
+    ]
+    ax.legend(legend_patches, labels, loc='upper center', bbox_to_anchor=(0.5, -0.2),
+              ncol=len(labels), frameon=False)
 
     buf = BytesIO()
     plt.tight_layout()
     plt.savefig(buf, format="png")
-    buf.seek(0)
     plt.close(fig)
-
+    buf.seek(0)
     return StreamingResponse(buf, media_type="image/png")
 
 async def generate_pie_chart(request: PieChartRequest):
@@ -480,19 +499,17 @@ async def generate_top_sources(request: TableRequest):
     num_tables = len(all_data)
     rows = math.ceil(num_tables / cols)
 
-    fig, axes = plt.subplots(rows, cols, figsize=(cols * 6, rows * 6))
+    fig, axes = plt.subplots(1, 3, figsize=(20, 8))
 
     if rows == 1:
         axes = [axes]
     axes_flat = [ax for row in axes for ax in row]
 
     for ax in axes_flat[len(all_data):]:
-        ax.set_visible(False)
+        ax.axis("off")
 
     for i, data in enumerate(all_data):
         ax = axes_flat[i]
-        ax.axis("off")
-
         title = data.title
         rows_data = data.rows
         scores = data.scores if data.scores else 0
@@ -507,9 +524,8 @@ async def generate_top_sources(request: TableRequest):
             cellText=table_data,
             colLabels=headers if headers else None,
             cellLoc='center',
-            loc='center'
+            loc='best'
         )
-
         table.auto_set_font_size(False)
         table.set_fontsize(10)
 
@@ -539,7 +555,6 @@ async def generate_top_sources(request: TableRequest):
         ax.text(0.05, top + 0.05, f"{scores}%", ha='left', fontsize=12, fontweight='bold', transform=ax.transAxes, color=scores_color)
         ax.axis("off")
     
-    plt.subplots_adjust(hspace=0.8)
     buf = BytesIO()
     plt.savefig(buf, format="png", bbox_inches='tight')
     buf.seek(0)
