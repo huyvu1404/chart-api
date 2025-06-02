@@ -4,7 +4,19 @@ def get_table_position(fig, ax, table):
     inv = ax.transData.inverted()
     bbox_data = inv.transform(bbox)
     top = bbox_data[:, 1].max()
-    return top
+    left = bbox_data[:, 0].min()
+    right = bbox_data[:, 0].max()
+    bottom = bbox_data[:, 1].min()
+    return top, left, right, bottom
+
+def get_right_edge_x(fig, ax, text_obj):
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    bbox = text_obj.get_window_extent(renderer=renderer)
+    inv = ax.transAxes.inverted()
+    bbox_axes = inv.transform((bbox.x1, bbox.y1))  
+    right_edge_x = bbox_axes[0]
+    return right_edge_x
 
 def get_max_text_widths(rows_data, column_labels=None, font_size=10):
 

@@ -44,7 +44,8 @@ class TableData(BaseModel):
     title: Optional[str] = None
     headers: Optional[List[str]] = None
     total: Optional[int] = None
-    scores: Optional[float] = None
+    percentage: Optional[float] = None
+    score: Optional[float] = None
     rows: List[List[Union[str, int]]]
 
 class TableRequest(BaseModel):

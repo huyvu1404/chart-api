@@ -11,7 +11,7 @@ from io import BytesIO
 from wordcloud import WordCloud
 from fastapi.responses import StreamingResponse
 from models import TableRequest, SanKeyChartRequest, PieChartRequest, BarChartRequest, LineChartRequest, WordCloudRequest
-from .utils import get_table_position, get_max_text_widths
+from .utils import get_table_position, get_max_text_widths, get_right_edge_x
 
 async def generate_bar_chart(request: BarChartRequest):
     if not request.x or not request.y:
@@ -76,7 +76,8 @@ async def generate_conversation_breakdown(request: BarChartRequest):
         return StreamingResponse(BytesIO(), media_type="image/png")
     if not isinstance(request.y[0], list):
         return StreamingResponse(BytesIO(), media_type="image/png")
-    
+    colors = request.colors if request.colors else ["#D3D3D3", "#4CAF50", "#F44336"]
+    labels = request.labels if request.labels else ["Neutral", "Positive", "Negative"]
     x = [""] + request.x + [""]
     x_pos = np.arange(len(x))
     bottom = np.zeros(len(x))
@@ -90,7 +91,7 @@ async def generate_conversation_breakdown(request: BarChartRequest):
             max_y = max(y)
             y = [0] + y + [0]
             max_value = max(max_value, max_y)
-            ax.bar(x_pos, y, width=bar_width, bottom=bottom, color=request.colors[i], label=request.labels[i])
+            ax.bar(x_pos, y, width=bar_width, bottom=bottom, color=colors[i], label=labels[i])
             bottom += y
 
     ax.set_xticks(x_pos)
@@ -111,7 +112,12 @@ async def generate_conversation_breakdown(request: BarChartRequest):
     fig.suptitle(request.title, x=0.01, y=0.98, ha='left', fontsize=16, weight='bold')
     fig.subplots_adjust(top=0.88)
     ax.grid(True, which='major', axis='y', linestyle='--', linewidth=0.5, alpha=0.7)
-    ax.legend(loc='lower center', bbox_to_anchor=(1, 1), frameon=False)
+    legend_patches = [
+        Patch(color=colors[i], label=labels[i]) for i in range(len(labels))
+    ]
+    ax.legend(legend_patches, labels, loc='upper center', bbox_to_anchor=(0.5, -0.2),
+              ncol=len(labels), frameon=False)
+
     for spine in ['top', 'right', 'left', 'bottom']:
         ax.spines[spine].set_visible(False)
 
@@ -124,6 +130,8 @@ async def generate_conversation_breakdown(request: BarChartRequest):
     return StreamingResponse(buf, media_type="image/png")
 
 async def generate_top_social_posts(request: BarChartRequest):
+    if not request:
+        return StreamingResponse(BytesIO(), media_type="image/png")
     if not request.x or not request.y:
         return StreamingResponse(BytesIO(), media_type="image/png")
     
@@ -329,12 +337,14 @@ async def generate_line_chart(request: LineChartRequest):
     return StreamingResponse(buf, media_type="image/png")
 
 async def generate_trend_chart(request: LineChartRequest):
+    if not request:
+        return StreamingResponse(BytesIO(), media_type="image/png")
     if not request.x or not request.y:
         return StreamingResponse(BytesIO(), media_type="image/png")
     
-    current = request.y[0] if len(request.y) > 0 else []
-    previous = request.y[1] if len(request.y) > 1 else []
-
+    previous = request.y[0] if len(request.y) > 1 else []
+    current = request.y[1] if len(request.y) > 0 else []
+ 
     fig, ax = plt.subplots()
     fig.subplots_adjust(top=0.88)  
 
@@ -353,7 +363,7 @@ async def generate_trend_chart(request: LineChartRequest):
     fig.suptitle(request.title, x=0.01, y=1.02, ha='left', fontsize=14, weight='bold')
 
     t1 = fig.text(
-        0.1, 0.93,
+        0.1, 0.94,
         f"{emoji} {total_current}",
         ha='left', va='top',
         fontsize=14, fontweight='bold',
@@ -366,15 +376,13 @@ async def generate_trend_chart(request: LineChartRequest):
     new_pos = inv.transform((bbox.x1, bbox.y1))[0] + 0.01 
 
     fig.text(
-        new_pos, 0.92,
+        new_pos, 0.93,
         f"{arrow} {abs(percentage_change):.2f}% (compare to last period)",
         ha='left', va='top',
         fontsize=10, fontweight='bold',
         color=color[0]
     )
-
-    ax.set_xlabel(request.xlabel)
-    ax.set_ylabel(request.ylabel)
+    ax.set_ylim(bottom=0)
     ax.tick_params(axis='y', length=0)
     ax.legend(loc='upper left', bbox_to_anchor=(1, 1), frameon=False)
 
@@ -389,16 +397,24 @@ async def generate_trend_chart(request: LineChartRequest):
     return StreamingResponse(buf, media_type="image/png")
 
 async def generate_topic_distribution(request: SanKeyChartRequest):
-    sources = request.data["sources"] if request.data.get("sources") else []
-    sentiments = request.data["sentiments"] if request.data.get("sentiments") else []
-    topics = request.data["topics"] if request.data.get("topics") else []
+    sources = request.data.get("sources") if request.data.get("sources") else {}
+    sentiments = request.data.get("sentiments")if request.data.get("sentiments") else []
+    topics = request.data.get("topics") if request.data.get("topics") else []
     
     if not sources and not sentiments and not topics:
         return StreamingResponse(BytesIO(), media_type="image/png")
-    labels = sources + sentiments + topics
+    source_labels = [source["source"] for source in sources]
+    topic_labels = [topic["topic"] for topic in topics]
+    labels = source_labels + sentiments + topic_labels
     node_indices = {label: idx for idx, label in enumerate(labels)}
     
     source_list = []
+    total_source = [source["total"] for source in sources]
+   
+    # create a dict source - total and topic - total named labels 
+    
+    sources_dict = {source["source"]: source["total"] for source in sources} 
+    
     target_list = []
     value_list = []
     custom_data = []
@@ -412,6 +428,7 @@ async def generate_topic_distribution(request: SanKeyChartRequest):
             target_list.append(node_indices[sentiment_name])
             value_list.append(value)
 
+
     for link in request.data["links"]:
         if 'sentiment' in link and 'topic' in link:
             sentiment_name = link['sentiment']
@@ -421,8 +438,7 @@ async def generate_topic_distribution(request: SanKeyChartRequest):
             target_list.append(node_indices[topic_name])
             value_list.append(value)
 
-    total_value = sum(value_list)
-
+    total_value = sum(total_source)
     node_values = [0] * len(labels)  
     for src, tgt, val in zip(source_list, target_list, value_list):
         node_values[src] += val  
@@ -430,9 +446,12 @@ async def generate_topic_distribution(request: SanKeyChartRequest):
     
     updated_labels = []
     for i, label in enumerate(labels):
-        value = node_values[i]
-        percentage = (value / total_value) * 100 if total_value > 0 else 0
-        updated_labels.append(f"{label} {percentage:.2f}% ({value})")
+        value = sources_dict.get(label) #or node_values[i]
+        if value:
+            percentage = (value / total_value) * 100 if total_value > 0 else 0
+            updated_labels.append(f"{label} {percentage:.2f}% ({value})")
+        else:
+            updated_labels.append(label)
 
     for value in value_list:
         custom_data.append(f"{value} mention")
@@ -443,7 +462,7 @@ async def generate_topic_distribution(request: SanKeyChartRequest):
         "Negative": "#f53105"
     }
 
-    random.seed(40)
+    random.seed(10)
     def get_random_color():
         return "#%06x" % random.randint(0, 0xFFFFFF)
 
@@ -460,7 +479,7 @@ async def generate_topic_distribution(request: SanKeyChartRequest):
         node=dict(
             pad=10,
             thickness=15,
-            line=dict(color="black", width=0.5),
+            line=dict(color="rgba(0,0,0,0)", width=0),
             label=updated_labels,
             color=node_colors,  
         ),
@@ -511,9 +530,19 @@ async def generate_top_sources(request: TableRequest):
         ax = axes_flat[i]
         title = data.title
         rows_data = data.rows
-        scores = data.scores if data.scores else 0
+        score = data.score if data.score else 0
         total_mention = data.total if data.total else 0
+        percentage_change = data.percentage if data.percentage else 0
         total_score = sum(r[1] for r in rows_data) or 1
+        if percentage_change > 0:
+            percentage_str = f" ⬆️ {(percentage_change):.2f}%"
+            text_color = '#61ff00'
+        elif percentage_change < 0:
+            percentage_str = f" ⬇️ {abs(percentage_change):.2f}%"
+            text_color = '#f53105'
+        else:
+            percentage_str = ""
+            text_color = '#666666'
 
         table_data = [
             [r[0][:20] + '...' if len(r[0]) > 20 else r[0], f"{round(r[1] / total_score * 100, 2)}% ({r[1]})"] for r in rows_data
@@ -544,14 +573,19 @@ async def generate_top_sources(request: TableRequest):
                 cell.set_facecolor('#dffcfa')
                 cell.set_width(0.25)
 
-        top = get_table_position(fig, ax, table)
+        top, left, right, bottom = get_table_position(fig, ax, table)
 
-        scores_color = '#61ff00' if scores >= 0 else '#f53105'
         ax.text(0.5, top + 0.40, title, ha='center', va='bottom', fontsize=14, fontweight='bold', transform=ax.transAxes)
-        ax.text(0.05, top + 0.35, "Total Mention", ha='left', fontsize=12, transform=ax.transAxes, fontweight='bold', color='#666666')
-        ax.text(0.05, top + 0.25, f"{total_mention}", ha='left', fontsize=12, fontweight='bold', transform=ax.transAxes, color=scores_color)
-        ax.text(0.05, top + 0.15, "Net Sentiment Score", ha='left', fontsize=12, transform=ax.transAxes, fontweight='bold', color='#666666')
-        ax.text(0.05, top + 0.05, f"{scores}%", ha='left', fontsize=12, fontweight='bold', transform=ax.transAxes, color=scores_color)
+        total_mention_text = ax.text(0.05, top + 0.30, "Total Mention", ha='left', fontsize=12,
+                   transform=ax.transAxes, fontweight='bold', color='#a7a7a7')
+        right_edge_x = get_right_edge_x(fig, ax, total_mention_text)
+        ax.text(right_edge_x, top + 0.25, f"{total_mention}", ha='right', fontsize=12,
+                fontweight='bold', transform=ax.transAxes, color="#2c2c2c")
+        ax.text(right_edge_x, top + 0.20, f"{percentage_str}", ha='right', fontsize=12,
+                color=text_color, fontweight='bold', transform=ax.transAxes)
+        net_sentiment_text = ax.text(0.05, top + 0.10, "Net Sentiment Score", ha='left', fontsize=12, transform=ax.transAxes, fontweight='bold', color='#2c2c2c')
+        right_edge_x = get_right_edge_x(fig, ax, net_sentiment_text)
+        ax.text(right, top + 0.05, f"{score}%", ha='right', fontsize=12, fontweight='bold', transform=ax.transAxes, color='#a7a7a7')
         ax.axis("off")
     
     buf = BytesIO()
@@ -567,9 +601,27 @@ async def generate_overview(request: TableRequest):
     data = request.data
    
     fig, ax = plt.subplots(figsize=(8, 2))
-
+    
     title = data.title
-    rows_data = data.rows
+    current, last = data.rows
+    rows_data = [current]
+    new_row = []
+    colors = []
+    for current_value, last_value in zip(current, last):
+        diff = (current_value - last_value)/ last_value * 100 if last_value != 0 else 0
+        if diff > 0:
+            row_color = '#61ff00'  # Green for positive change
+            arrow = '⬆️'
+        elif diff < 0:
+            row_color = '#f53105'
+            arrow = '⬇️'
+        else:
+            row_color = '#c2c2c2'
+            arrow = '➡️'
+        # round the values to 2 decimal places
+        new_row.append(f"{arrow} {abs(current_value - last_value)} {abs(diff):.2f}%")
+        colors.append(row_color)
+    rows_data.append(new_row)
 
     headers = data.headers if data.headers else None
     table = ax.table(
@@ -578,19 +630,21 @@ async def generate_overview(request: TableRequest):
         cellLoc='center',
         loc='center'
     )
-    col_widths = get_max_text_widths(rows_data, headers, font_size=10)
+    col_widths = get_max_text_widths(rows_data, headers, font_size=14)
 
     for (row, col), cell in table.get_celld().items():
         cell.set_linewidth(0)
         cell.set_width(col_widths[col])
-        cell.set_height(0.2) 
+        cell.set_height(0.2)
         if headers and row == 0:
             cell.set_facecolor('#05c2f5')
-            cell.set_text_props(weight='bold', color='#f4f6f7')        
-        else:
+            cell.set_text_props(weight='bold', color='#f4f6f7')
+        elif row == 1:
             cell.set_text_props(weight='bold', color='#666666')
-            
-    top = get_table_position(fig, ax, table)
+        elif row == 2:  
+            cell.set_text_props(weight='bold', color=colors[col])
+                
+    top, left, right, bottom = get_table_position(fig, ax, table)
     if title:
         ax.text(0.01, top + 0.1, title, ha='left', va='bottom', fontsize=14, fontweight='bold', transform=ax.transAxes)
     ax.axis("off")
