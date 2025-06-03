@@ -605,12 +605,12 @@ async def generate_overview(request: TableRequest):
     title = data.title
     current, last = data.rows
     rows_data = [current]
-    new_row = []
+    change_row = []
     colors = []
     for current_value, last_value in zip(current, last):
         diff = (current_value - last_value)/ last_value * 100 if last_value != 0 else 0
         if diff > 0:
-            row_color = '#61ff00'  # Green for positive change
+            row_color = '#61ff00'  
             arrow = '⬆️'
         elif diff < 0:
             row_color = '#f53105'
@@ -618,10 +618,10 @@ async def generate_overview(request: TableRequest):
         else:
             row_color = '#c2c2c2'
             arrow = '➡️'
-        # round the values to 2 decimal places
-        new_row.append(f"{arrow} {abs(current_value - last_value)} {abs(diff):.2f}%")
+        
+        change_row.append(f"{arrow} {abs(current_value - last_value)} {abs(diff):.2f}%")
         colors.append(row_color)
-    rows_data.append(new_row)
+    rows_data.append(change_row)
 
     headers = data.headers if data.headers else None
     table = ax.table(
@@ -693,7 +693,7 @@ async def generate_brand_attribute(request: TableRequest):
         else:
             cell.set_text_props( color='#666666')
             
-    top = get_table_position(fig, ax, table)
+    top, left, right, bottom  = get_table_position(fig, ax, table)
     ax.text(0.01, top + 0.1, title, ha='left', va='bottom', fontsize=14, fontweight='bold', transform=ax.transAxes)
     ax.axis("off")
 
@@ -740,7 +740,7 @@ async def generate_channel_distribution(request: TableRequest):
             cell.set_facecolor('#f0f0f0')
         cell.set_text_props(ha=ha, weight='bold', color=text_color)
             
-    top = get_table_position(fig, ax, table)
+    top, left, right, bottom = get_table_position(fig, ax, table)
     ax.text(0.01, top + 0.1, title, ha='left', va='bottom', fontsize=14, fontweight='bold', transform=ax.transAxes)
     ax.axis("off")
 
